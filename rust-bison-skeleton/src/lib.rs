@@ -1,6 +1,22 @@
 use std::error::Error;
 use std::path::Path;
 use std::process::Command;
+use std::fmt;
+
+#[derive(Debug)]
+struct BisonErr {
+    message: String,
+    code: Option<i32>
+}
+
+impl fmt::Display for BisonErr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "BisonErr: {} ({:#?})", self.message, self.code)
+    }
+}
+
+impl Error for BisonErr {}
+
 
 pub fn process_bison_file(filepath: &Path) -> Result<(), Box<dyn Error>> {
     let input = filepath;
@@ -40,9 +56,14 @@ pub fn process_bison_file(filepath: &Path) -> Result<(), Box<dyn Error>> {
         output.to_str().unwrap(),
         input.to_str().unwrap(),
     ];
+    println!("bison args = {:#?}", args);
 
     let output = Command::new("bison").args(args).output()?;
-    println!("output = {:#?}", output);
 
-    Ok(())
+    if output.status.success() {
+       return Ok(());
+    } else {
+        let stderr = String::from_utf8(output.stderr).unwrap();
+        return Err(Box::new(BisonErr { message: stderr, code: output.status.code() }));
+    }
 }
