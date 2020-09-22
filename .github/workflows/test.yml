@@ -1,0 +1,36 @@
+on: [push, pull_request]
+
+name: tests
+
+jobs:
+  tests:
+    name: Run Tests
+    runs-on: macos-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+
+      - name: run tests
+        run: |
+          rustc --version
+          brew install bison
+          export PATH="/usr/local/opt/bison/bin:$PATH"
+
+          which bison
+          bison --version
+
+          pwd
+
+          cd tests
+
+          cargo build
+          ls -R src
+
+          cargo test

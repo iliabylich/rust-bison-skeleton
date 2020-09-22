@@ -1,0 +1,25 @@
+on: [push, pull_request]
+
+name: lint
+
+jobs:
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt
+
+      - name: run tests
+        run: |
+          rustc --version
+          pwd
+          rustfmt --check **/*.rs

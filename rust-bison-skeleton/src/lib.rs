@@ -41,7 +41,8 @@ pub fn process_bison_file(filepath: &Path) -> Result<(), Box<dyn Error>> {
         input.to_str().unwrap(),
     ];
 
-    Command::new("bison").args(args).status()?;
+    let output = Command::new("bison").args(args).output()?;
+    println!("output = {:#?}", output);
 
     Ok(())
 }
