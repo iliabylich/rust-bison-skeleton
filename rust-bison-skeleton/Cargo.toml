@@ -3,6 +3,9 @@ name = "rust-bison-skeleton"
 version = "0.1.0"
 authors = ["Ilya Bylich <ibylich@gmail.com>"]
 edition = "2018"
+description = "Bison skeleton for Rust"
+license = "MIT"
+repository = "https://github.com/iliabylich/rust-bison-skeleton"
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
