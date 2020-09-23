@@ -114,7 +114,11 @@ pub struct Lexer {
     tokens: Vec<Token>
 }
 
-impl Lex for Lexer {
+impl Lexer {
+    pub fn new(tokens: Vec<Token>) -> Self {
+        Self { tokens }
+    }
+
     fn yylex(&mut self) -> Token {
         self.tokens.remove(0)
     }
@@ -125,11 +129,5 @@ impl Lex for Lexer {
 
     fn yyerror(&mut self, loc: &Loc, msg: &str) {
         eprintln!("{:#?} {:#?}", loc, msg)
-    }
-}
-
-impl Lexer {
-    pub fn new(tokens: Vec<Token>) -> Self {
-        Self { tokens }
     }
 }

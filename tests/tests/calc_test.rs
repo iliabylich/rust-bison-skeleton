@@ -29,7 +29,7 @@ fn test() {
             CalcLoc { begin: 6, end: 6 },
         ),
     ];
-    let lexer = Box::new(CalcLexer::new(tokens));
+    let lexer = CalcLexer::new(tokens);
 
     let mut parser = CalcParser::new(lexer);
     parser.yydebug = 0;

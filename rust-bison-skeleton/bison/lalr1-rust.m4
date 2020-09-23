@@ -64,11 +64,13 @@ use std::convert::TryFrom;
 ]
 b4_percent_code_get([[use]])[
 
+/*
 pub trait Lex {
     fn yylex(&mut self) -> Token;
     fn report_syntax_error(&self, ctx: &Context);
     fn yyerror(&mut self, loc: &Loc, msg: &str);
 }
+*/
 
 /**
  * A Bison parser, automatically generated from <tt>]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[</tt>.
@@ -77,7 +79,7 @@ pub trait Lex {
  */
 ][
 pub struct ]b4_parser_struct[ {
-    yylexer: Box<dyn Lex>,
+    yylexer: Lexer,
     // true if verbose error messages are enabled.
     #[allow(dead_code)]
     yy_error_verbose: bool,
@@ -748,13 +750,13 @@ const YYNTOKENS_: i32 = ]b4_tokens_number[;
 }
 
 impl ]b4_parser_struct[ {
-    pub fn new(lex: Box<dyn Lex>) -> Self {
+    pub fn new(lexer: Lexer) -> Self {
         Self {
           yy_error_verbose: true,
           yynerrs: 0,
           yydebug: 0,
           yyerrstatus_: 0,
-          yylexer: lex,
+          yylexer: lexer,
           result: None,
         }
     }
