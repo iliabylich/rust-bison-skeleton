@@ -63,15 +63,21 @@ use std::convert::TryFrom;
 
 ]
 b4_percent_code_get([[use]])[
+
+pub trait Lex {
+    fn yylex(&mut self) -> Token;
+    fn report_syntax_error(&self, ctx: &Context);
+    fn yyerror(&mut self, loc: &Loc, msg: &str);
+}
+
 /**
  * A Bison parser, automatically generated from <tt>]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[</tt>.
  *
  * @@author LALR (1) parser skeleton written by Paolo Bonzini.
  */
 ][
-#@{derive(Default)@}
 pub struct ]b4_parser_struct[ {
-    yylexer: Lexer,
+    yylexer: Box<dyn Lex>,
     // true if verbose error messages are enabled.
     #[allow(dead_code)]
     yy_error_verbose: bool,
@@ -82,7 +88,7 @@ pub struct ]b4_parser_struct[ {
 
     yyerrstatus_: i32,
 
-  ]b4_percent_code_get([[parser_struct_fields]])[
+    result: Option<]b4_resulttype[>
 }
 
 macro_rules! cast_to_variant {
@@ -173,7 +179,7 @@ b4_parse_trace_if([[
 }
 
 #[derive(Clone)]
-struct YYStack {
+pub struct YYStack {
     state_stack: Vec<i32>,
     loc_stack: Vec<]b4_location_type[>,
     value_stack: Vec<]b4_yystype[>,
@@ -622,7 +628,7 @@ b4_dollar_popdef[]dnl
 ][
 
 #@{derive(Debug)@}
-struct Context {
+pub struct Context {
     yystack: YYStack,
     yytoken: SymbolKind,
     loc: ]b4_location_type[
@@ -742,13 +748,14 @@ const YYNTOKENS_: i32 = ]b4_tokens_number[;
 }
 
 impl ]b4_parser_struct[ {
-    pub fn build() -> Self {
+    pub fn new(lex: Box<dyn Lex>) -> Self {
         Self {
           yy_error_verbose: true,
           yynerrs: 0,
           yydebug: 0,
           yyerrstatus_: 0,
-          ..Self::default()
+          yylexer: lex,
+          result: None,
         }
     }
 }

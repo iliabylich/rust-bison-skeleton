@@ -304,6 +304,8 @@ b4_percent_define_check_kind([[api.parser.struct]],  [code], [deprecated])
 
 m4_define([b4_yystype], [b4_percent_define_get([[api.value.type]])])
 b4_percent_define_default([[api.value.type]], [[String]])
+m4_define([b4_resulttype], [b4_percent_define_get([[api.parser.result_type]])])
+b4_percent_define_default([[api.parser.result_type]], [[String]])
 b4_percent_define_default([[api.symbol.prefix]], [[S_]])
 
 # b4_api_prefix, b4_api_PREFIX
