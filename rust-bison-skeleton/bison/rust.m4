@@ -376,7 +376,7 @@ m4_define([b4_lhs_value], [yyval])
 # -----------------------------
 # See README.
 m4_define([b4_rhs_data],
-[yystack.value_at(b4_subtract($@))])
+[yystack.owned_value_at(b4_subtract($@))])
 
 # b4_rhs_value(RULE-LENGTH, POS, SYMBOL-NUM, [TYPE])
 # --------------------------------------------------
@@ -386,7 +386,7 @@ m4_define([b4_rhs_data],
 # between the angle brackets.
 m4_define([b4_rhs_value],
 [m4_ifval([$4],
-          [ cast_to_variant!($4, b4_rhs_data([$1], [$2]))],
+          [ cast_to_variant!($4, yystack, b4_rhs_data([$1], [$2]))],
           [ b4_rhs_data([$1], [$2])])])
 
 

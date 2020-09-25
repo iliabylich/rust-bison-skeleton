@@ -94,10 +94,31 @@ pub struct ]b4_parser_struct[ {
 }
 
 macro_rules! cast_to_variant {
-    ($v:ident, $value:expr) => {
-        match $value {
-            ]b4_yystype[::$v(v) => v,
-            _ => panic!("{:#?}", $value)
+    (RAW, $yystack:expr, yystack.owned_value_at($idx:expr)) => {
+        $yystack.owned_value_at($idx)
+    };
+
+    (Borrow:RAW, $yystack:expr, yystack.owned_value_at($idx:expr)) => {
+        $yystack.borrow_value_at($idx)
+    };
+
+    ($v:ident, $yystack:expr, yystack.owned_value_at($idx:expr)) => {
+        {
+            let v = $yystack.owned_value_at($idx);
+            match v {
+                Value::$v(v) => v,
+                _ => panic!("Expected {}, got {:#?}", stringify!($v), v)
+            }
+        }
+    };
+
+    (Borrow:$v:ident, $yystack:expr, yystack.owned_value_at($idx:expr)) => {
+        {
+            let v = $yystack.borrow_value_at($idx);
+            match v {
+                Value::$v(v) => v,
+                _ => panic!("Expected {}, got {:#?}", stringify!($v), v)
+            }
         }
     };
 }
@@ -108,6 +129,12 @@ pub type Token = (i32, String]b4_locations_if([, ]b4_location_type)[);
 pub struct ]b4_location_type[ {
     pub begin: usize,
     pub end: usize,
+}
+
+impl ]b4_location_type[ {
+    pub fn to_range(&self) -> std::ops::Range<usize> {
+        self.begin..self.end
+    }
 }
 
 impl ]b4_parser_struct[ {]
@@ -227,8 +254,16 @@ impl YYStack {
         self.loc_stack.iter().rev().nth(i.try_into().unwrap()).unwrap()
     }
 ]])[
-    pub fn value_at(&self, i: i32) -> &]b4_yystype[ {
+    pub fn borrow_value_at(&self, i: i32) -> &]b4_yystype[ {
         self.value_stack.iter().rev().nth(i.try_into().unwrap()).unwrap()
+    }
+
+    pub fn owned_value_at(&mut self, i: i32) ->]b4_yystype[ {
+        let mut result =  ]b4_yystype[::Stolen;
+        let i_usize: usize = i.try_into().unwrap();
+        let len = self.value_stack.len();
+        std::mem::swap(&mut result, &mut self.value_stack[len - 1 - i_usize]);
+        result
     }
 
     pub fn is_empty(&self) -> bool {
@@ -313,7 +348,11 @@ impl ]b4_parser_struct[ {
        Otherwise, the following line sets YYVAL to garbage.
        This behavior is undocumented and Bison
        users should not rely upon it.  */
-    let mut yyval: ]b4_yystype[ = if 0 < *yylen { yystack.value_at(*yylen - 1).clone() } else { yystack.value_at(0).clone() };
+    let mut yyval: ]b4_yystype[ = if 0 < *yylen {
+      yystack.borrow_value_at(*yylen - 1).clone()
+    } else {
+      yystack.borrow_value_at(0).clone()
+    };
     ]b4_locations_if([[
     let yyloc: ]b4_location_type[ = make_yylloc(&yystack, *yylen);]])[]b4_parse_trace_if([[
 
@@ -713,7 +752,7 @@ impl ]b4_parser_struct[ {
       let state: usize = yystack.state_at((yynrhs - (yyi + 1)).into()).clone().try_into().unwrap();
       self.yy_symbol_print(&format!("   ${} =", yyi + 1),
                     SymbolKind::get(Self::yystos_[state].try_into().unwrap()),
-                    yystack.value_at(((yynrhs) - (yyi + 1)).into())]b4_locations_if([,
+                    yystack.borrow_value_at(((yynrhs) - (yyi + 1)).into())]b4_locations_if([,
                     yystack.location_at(((yynrhs) - (yyi + 1)).into())])[);
     }
   }]])[
@@ -745,9 +784,9 @@ const YYLAST_: i32 = ]b4_last[;
 const YYEMPTY_: i32 = -2;
 const YYFINAL_: i32 = ]b4_final_state_number[;
 const YYNTOKENS_: i32 = ]b4_tokens_number[;
+}
 
 ]b4_percent_code_get[
-}
 
 impl ]b4_parser_struct[ {
     pub fn new(lexer: Lexer) -> Self {
