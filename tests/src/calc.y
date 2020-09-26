@@ -81,6 +81,7 @@ exp:
 #[derive(Clone, PartialEq)]
 pub enum Value {
     None,
+    Stolen,
     Token(Token),
     Expr(String)
 }
@@ -94,11 +95,12 @@ impl Value {
 impl std::fmt::Debug for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { //'
         match self {
-            Value::None => f.write_str("<No Token>"),
+            Value::None => f.write_str("Token::None"),
+            Value::Stolen => f.write_str("Token::Stolen"),
             Value::Token((token_type, token_value, loc)) => {
-              f.write_fmt(format_args!("Token({}, {:?}, {:?})", token_type, token_value, loc))
+              f.write_fmt(format_args!("Token::Token({}, {:?}, {:?})", token_type, token_value, loc))
             },
-            Value::Expr(expr) => f.write_fmt(format_args!("Expr({})", expr))
+            Value::Expr(expr) => f.write_fmt(format_args!("Token::Expr({})", expr))
         }
     }
 }
