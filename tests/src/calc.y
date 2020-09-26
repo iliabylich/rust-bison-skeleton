@@ -106,12 +106,19 @@ impl std::fmt::Debug for Value {
 }
 
 impl Parser {
+  pub fn new(lexer: Lexer) -> Self {
+      let mut result = Parser::default();
+      result.yylexer = lexer;
+      result
+  }
+
   pub fn do_parse(mut self) -> Option<String> {
       self.parse();
       self.result
   }
 }
 
+#[derive(Debug, Default)]
 pub struct Lexer {
     tokens: Vec<Token>
 }

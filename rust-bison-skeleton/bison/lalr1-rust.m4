@@ -78,6 +78,7 @@ pub trait Lex {
  * @@author LALR (1) parser skeleton written by Paolo Bonzini.
  */
 ][
+#@{derive(Debug, Default)@}
 pub struct ]b4_parser_struct[ {
     yylexer: Lexer,
     // true if verbose error messages are enabled.
@@ -90,7 +91,9 @@ pub struct ]b4_parser_struct[ {
 
     yyerrstatus_: i32,
 
-    result: Option<]b4_resulttype[>
+    result: Option<]b4_resulttype[>,
+
+    ]b4_percent_code_get([[parser_fields]])[
 }
 
 macro_rules! cast_to_variant {
@@ -789,14 +792,14 @@ const YYNTOKENS_: i32 = ]b4_tokens_number[;
 ]b4_percent_code_get[
 
 impl ]b4_parser_struct[ {
-    pub fn new(lexer: Lexer) -> Self {
+    pub fn build() -> Self {
         Self {
           yy_error_verbose: true,
           yynerrs: 0,
           yydebug: 0,
           yyerrstatus_: 0,
-          yylexer: lexer,
           result: None,
+          ..Default::default()
         }
     }
 }
