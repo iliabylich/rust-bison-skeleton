@@ -152,6 +152,24 @@ m4_define([b4_token_enums],
 b4_symbol_foreach([b4_token_enum])])])
 
 
+# b4_token_name
+# -------------
+m4_define([b4_token_name],
+[b4_token_visible_if([$1],
+    [m4_format([[
+    "%s",
+]],
+               b4_symbol([$1], [id]))])])
+
+# b4_token_values
+# ---------------
+# Output names of tokens
+m4_define([b4_token_values],
+[b4_any_token_visible_if([    @{
+b4_symbol_foreach([b4_token_name])
+@}
+])])
+
 
 ## -------------- ##
 ## Symbol kinds.  ##

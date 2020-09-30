@@ -1,9 +1,8 @@
 %expect 0
 
-%define api.parser.struct Parser
-%define api.location.type Loc
-%define api.value.type Value
-%define api.parser.result_type String
+%define api.parser.struct { Parser }
+%define api.location.type { Loc }
+%define api.value.type { Value }
 
 %define parse.error custom
 %define parse.trace
@@ -11,6 +10,10 @@
 
 %code use {
   // all use goes here
+}
+
+%code parser_fields {
+  result: Option<String>,
 }
 
 %code {
@@ -107,9 +110,14 @@ impl std::fmt::Debug for Value {
 
 impl Parser {
   pub fn new(lexer: Lexer) -> Self {
-      let mut result = Parser::default();
-      result.yylexer = lexer;
-      result
+      Self {
+          yy_error_verbose: true,
+          yynerrs: 0,
+          yydebug: 0,
+          yyerrstatus_: 0,
+          yylexer: lexer,
+          result: None
+      }
   }
 
   pub fn do_parse(mut self) -> Option<String> {
@@ -118,7 +126,7 @@ impl Parser {
   }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Lexer {
     tokens: Vec<Token>
 }
