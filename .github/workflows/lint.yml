@@ -18,9 +18,6 @@ jobs:
           override: true
           components: rustfmt
 
-      - name: run tests
+      - name: run rustfmt
         run: |
-          rustc --version
-          pwd
-          find . | grep -F ".rs"
           rustfmt --check **/*.rs

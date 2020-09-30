@@ -4,8 +4,11 @@ name: tests
 
 jobs:
   tests:
-    name: Run Tests
-    runs-on: macos-latest
+    name: run tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -17,20 +20,15 @@ jobs:
           toolchain: nightly
           override: true
 
+      - name: install bison
+        run: |
+          brew install bison
+      - name: add bison to path
+        run: |
+          echo "::add-path::/usr/local/opt/bison/bin"
+      - name: print bison version
+        run: |
+          bison --version
       - name: run tests
         run: |
-          rustc --version
-          brew install bison
-          export PATH="/usr/local/opt/bison/bin:$PATH"
-
-          which bison
-          bison --version
-
-          pwd
-
-          cd tests
-
-          cargo build
-          ls -R src
-
-          cargo test
+          cd tests && cargo test
