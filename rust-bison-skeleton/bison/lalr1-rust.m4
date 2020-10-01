@@ -124,7 +124,7 @@ macro_rules! cast_to_variant {
     };
 }
 
-pub type Token = (i32, String]b4_locations_if([, ]b4_location_type)[);
+pub type Token = (i32, Vec<u8>]b4_locations_if([, ]b4_location_type)[);
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ]b4_location_type[ {
