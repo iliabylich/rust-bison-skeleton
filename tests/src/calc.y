@@ -51,17 +51,17 @@ program:
 
 input:
   line
-| input line
+| input line { $$ = $<RAW>2; }
 ;
 
 line:
   EOL                { $$ = Value::Expr("EOL".to_owned()) }
 | exp EOL            { println!("{:#?}", $exp); }
-| error EOL          { println!("err recoery"); $$ = Value::Expr("EOL".to_owned()) }
+| error EOL          { println!("err recoery"); $$ = Value::Expr("ERR".to_owned()) }
 ;
 
 exp:
-  NUM                { $$ = Value::Expr($<Token>1.1.clone()) }
+  NUM                { $$ = Value::Expr(String::from_utf8_lossy(&$<Token>1.1).into_owned()) }
 | exp "=" exp {
       if $1 != $3 {
           self.yyerror(&@$, &format!("calc: error: {:#?} != {:#?}", $1, $3));

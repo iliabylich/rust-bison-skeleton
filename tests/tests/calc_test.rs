@@ -5,27 +5,27 @@ fn test() {
     let tokens: Vec<CalcToken> = vec![
         (
             CalcLexer::NUM,
-            String::from("42"),
+            b"42".to_vec(),
             CalcLoc { begin: 0, end: 2 },
         ),
         (
             CalcLexer::PLUS,
-            String::from("+"),
+            b"+".to_vec(),
             CalcLoc { begin: 2, end: 3 },
         ),
         (
             CalcLexer::NUM,
-            String::from("17"),
+            b"17".to_vec(),
             CalcLoc { begin: 3, end: 5 },
         ),
         (
             CalcLexer::EOL,
-            String::from("\n"),
+            b"\n".to_vec(),
             CalcLoc { begin: 5, end: 6 },
         ),
         (
             CalcLexer::YYEOF,
-            String::from(""),
+            b"".to_vec(),
             CalcLoc { begin: 6, end: 6 },
         ),
     ];
@@ -36,4 +36,42 @@ fn test() {
     let result = parser.do_parse();
 
     assert_eq!(result, Some("\"42\" + \"17\"".to_owned()))
+}
+
+#[test]
+fn test_invalid() {
+    let tokens: Vec<CalcToken> = vec![
+        (
+            CalcLexer::EOL,
+            b"\n".to_vec(),
+            CalcLoc { begin: 5, end: 6 },
+        ),
+        (
+            CalcLexer::NUM,
+            b"42".to_vec(),
+            CalcLoc { begin: 0, end: 2 },
+        ),
+        (
+            CalcLexer::PLUS,
+            b"+".to_vec(),
+            CalcLoc { begin: 2, end: 3 },
+        ),
+        (
+            CalcLexer::EOL,
+            b"\n".to_vec(),
+            CalcLoc { begin: 5, end: 6 },
+        ),
+        (
+            CalcLexer::YYEOF,
+            b"".to_vec(),
+            CalcLoc { begin: 6, end: 6 },
+        ),
+    ];
+    let lexer = CalcLexer::new(tokens);
+
+    let mut parser = CalcParser::new(lexer);
+    parser.yydebug = 0;
+    let result = parser.do_parse();
+
+    assert_eq!(result, Some("ERR".to_owned()));
 }
