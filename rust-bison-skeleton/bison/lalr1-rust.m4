@@ -350,7 +350,8 @@ impl ]b4_parser_struct[ {
        Otherwise, the following line sets YYVAL to garbage.
        This behavior is undocumented and Bison
        users should not rely upon it.  */
-    let yyval: ]b4_yystype[;
+    #@{allow(unused_assignments)@}
+    let mut yyval: ]b4_yystype[ = ]b4_yystype[::None;
     ]b4_locations_if([[
     let yyloc: ]b4_location_type[ = make_yylloc(&yystack, *yylen);]])[]b4_parse_trace_if([[
 
@@ -358,8 +359,19 @@ impl ]b4_parser_struct[ {
 
     match yyn {
         ]b4_user_actions[
-        _ => { panic!("unknown bison state {}", yyn); }
+        _ => {}
     }]b4_parse_trace_if([[
+
+    match yyval {
+      ]b4_yystype[::None => {
+        yyval = if 0 < *yylen {
+          yystack.borrow_value_at(*yylen - 1).clone()
+        } else {
+          yystack.borrow_value_at(0).clone()
+        }
+      },
+      _ => {}
+    }
 
     let yyn_usize: usize = yyn.try_into().unwrap();
     self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[yyn_usize].try_into().unwrap()), &yyval]b4_locations_if([, &yyloc])[);]])[

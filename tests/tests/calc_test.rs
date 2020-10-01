@@ -42,19 +42,9 @@ fn test() {
 fn test_invalid() {
     let tokens: Vec<CalcToken> = vec![
         (
-            CalcLexer::EOL,
-            b"\n".to_vec(),
+            CalcLexer::BANG,
+            b"!".to_vec(),
             CalcLoc { begin: 5, end: 6 },
-        ),
-        (
-            CalcLexer::NUM,
-            b"42".to_vec(),
-            CalcLoc { begin: 0, end: 2 },
-        ),
-        (
-            CalcLexer::PLUS,
-            b"+".to_vec(),
-            CalcLoc { begin: 2, end: 3 },
         ),
         (
             CalcLexer::EOL,
@@ -70,7 +60,7 @@ fn test_invalid() {
     let lexer = CalcLexer::new(tokens);
 
     let mut parser = CalcParser::new(lexer);
-    parser.yydebug = 0;
+    parser.yydebug = 1;
     let result = parser.do_parse();
 
     assert_eq!(result, Some("ERR".to_owned()));
