@@ -32,7 +32,7 @@ fn test() {
     let lexer = CalcLexer::new(tokens);
 
     let mut parser = CalcParser::new(lexer);
-    parser.yydebug = 0;
+    parser.yydebug = 1;
     let result = parser.do_parse();
 
     assert_eq!(result, Some("\"42\" + \"17\"".to_owned()))

@@ -291,10 +291,8 @@ b4_symbol_foreach([b4_symbol_enum])
 # -----------------------------
 # We need to fool Rust's stupid unreachable code detection.
 m4_define([b4_case],
-[  $1 => { m4_ifval([$3], [ b4_comment([$3])])
-  if yyn == $1
-    $2;
-  },
+[  $1 => m4_ifval([$3], [ b4_comment([$3])])
+  $2,
 ])
 
 

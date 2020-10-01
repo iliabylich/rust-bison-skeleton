@@ -35,7 +35,7 @@
     EOL    _("end of line")
   <String>
     NUM    _("number")
-%type <Expr> exp input line
+%type <Expr> exp input line program
 
 %nonassoc "="       /* comparison            */
 %left "-" "+"
@@ -46,17 +46,17 @@
 /* Grammar follows */
 %%
 program:
-  input { self.result = Some($<Expr>1.clone()); }
+  input { self.result = Some($<Expr>1.clone()); $$ = Value::None; }
 ;
 
 input:
-  line
+  line { $$ = $1; }
 | input line { $$ = $<RAW>2; }
 ;
 
 line:
-  EOL                { $$ = Value::Expr("EOL".to_owned()) }
-| exp EOL            { println!("{:#?}", $exp); }
+  EOL                { $$ = Value::Expr("EOL".to_owned()); }
+| exp EOL            { println!("{:#?}", $<Borrow:Expr>exp); $$ = $1; }
 | error EOL          { println!("err recoery"); $$ = Value::Expr("ERR".to_owned()) }
 ;
 
@@ -66,6 +66,7 @@ exp:
       if $1 != $3 {
           self.yyerror(&@$, &format!("calc: error: {:#?} != {:#?}", $1, $3));
       }
+      $$ = Value::Expr("err".to_owned());
   }
 | exp "+" exp        { $$ = Value::Expr(format!("{:#?} + {:#?}", $<Expr>1, $<Expr>3)); }
 | exp "-" exp        { $$ = Value::Expr(format!("{:#?} - {:#?}", $<Expr>1, $<Expr>3)); }
