@@ -268,8 +268,8 @@ impl YYStack {
         result
     }
 
-    pub fn is_empty(&self) -> bool {
-      self.state_stack.is_empty()
+    pub fn len(&self) -> usize {
+      self.state_stack.len()
     }
 
 }
@@ -586,8 +586,7 @@ b4_dollar_popdef[]dnl
       /*-------------------------------------------------.
       | errorlab -- error raised explicitly by YYERROR.  |
       `-------------------------------------------------*/
-      Self::YYERROR => {]b4_locations_if([[
-        yyerrloc = yystack.location_at(yylen - 1).clone();]])[
+      Self::YYERROR => {
         /* Do not reclaim the symbols of the rule which action triggered
            this YYERROR.  */
         yystack.pop_n(yylen);
@@ -609,19 +608,21 @@ b4_dollar_popdef[]dnl
             yyn = Self::yypact_[yystate_usize].into();
             if !yy_pact_value_is_default(yyn) {
                 yyn += SymbolKind { value: SymbolKind::S_YYerror }.code();
-                let yyn_usize: usize = yyn.try_into().unwrap();
-                if 0 <= yyn && yyn <= Self::YYLAST_ && i32::from(Self::yycheck_[yyn_usize]) == SymbolKind::S_YYerror
+                if 0 <= yyn && yyn <= Self::YYLAST_ {
+                  let yyn_usize: usize = yyn.try_into().unwrap();
+                  if i32::from(Self::yycheck_[yyn_usize]) == SymbolKind::S_YYerror
                   {
                     yyn = Self::yytable_[yyn_usize].into();
                     if 0 < yyn {
                       break;
                     }
                   }
+                }
             }
 
             /* Pop the current state because it cannot handle the
              * error token.  */
-            if yystack.is_empty() {
+            if yystack.len() == 1 {
               return false;
             }
 
