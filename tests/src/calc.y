@@ -110,21 +110,25 @@ impl std::fmt::Debug for Value {
 }
 
 impl Parser {
-  pub fn new(lexer: Lexer) -> Self {
-      Self {
-          yy_error_verbose: true,
-          yynerrs: 0,
-          yydebug: 0,
-          yyerrstatus_: 0,
-          yylexer: lexer,
-          result: None
-      }
-  }
+    pub fn new(lexer: Lexer) -> Self {
+        Self {
+            yy_error_verbose: true,
+            yynerrs: 0,
+            yydebug: 0,
+            yyerrstatus_: 0,
+            yylexer: lexer,
+            result: None
+        }
+    }
 
-  pub fn do_parse(mut self) -> Option<String> {
-      self.parse();
-      self.result
-  }
+    pub fn do_parse(mut self) -> Option<String> {
+        self.parse();
+        self.result
+    }
+
+    fn next_token(&mut self) -> Token {
+        self.yylexer.yylex()
+    }
 }
 
 #[derive(Debug)]

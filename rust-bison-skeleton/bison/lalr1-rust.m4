@@ -458,7 +458,7 @@ b4_dollar_popdef[]dnl
         if yychar == Self::YYEMPTY_ {
 ]b4_parse_trace_if([[
             self.yycdebug("Reading a token");]])[
-            let yylex: Token = self.yylexer.yylex();
+            let yylex: Token = self.next_token();
             yychar = yylex.0;
             yylval = ]b4_yystype[::from_token(yylex.clone());]b4_locations_if([[
             yylloc = yylex.2;]])[
@@ -705,15 +705,14 @@ impl Context {
 ][
 
 impl ]b4_parser_struct[ {
-  /**
-   * Build and emit a "syntax error" message in a user-defined way.
-   *
-   * @@param ctx  The context of the error.
-   */
-  fn report_syntax_error(&self, yyctx: &Context) {
-      self.yylexer.report_syntax_error(yyctx);
-  }
-
+    /**
+     * Build and emit a "syntax error" message in a user-defined way.
+     *
+     * @@param ctx  The context of the error.
+     */
+    fn report_syntax_error(&self, yyctx: &Context) {
+        self.yylexer.report_syntax_error(yyctx);
+    }
 }
 
 /**
