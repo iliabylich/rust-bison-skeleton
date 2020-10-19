@@ -402,7 +402,7 @@ m4_define([b4_rhs_data],
 # between the angle brackets.
 m4_define([b4_rhs_value],
 [m4_ifval([$4],
-          [ cast_to_variant!($4, b4_rhs_data([$1], [$2]))],
+          [ $4::from(b4_rhs_data([$1], [$2]))],
           [ b4_rhs_data([$1], [$2])])])
 
 

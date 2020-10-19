@@ -93,23 +93,14 @@ pub struct ]b4_parser_struct[ {
     ]b4_percent_code_get([[parser_fields]])[
 }
 
+#[inline]
 fn usize_to_i32(v: usize) -> i32 {
     v.try_into().unwrap()
 }
 
+#[inline]
 fn i32_to_usize(v: i32) -> usize {
     v.try_into().unwrap()
-}
-
-macro_rules! cast_to_variant {
-    ($variant:ident, $value:expr) => {
-        {
-            match $value {
-                Value::$variant(v) => v,
-                _ => panic!("Expected {}, got {:#?}", stringify!($variant), $value)
-            }
-        }
-    };
 }
 
 #[derive(Debug, Clone)]
