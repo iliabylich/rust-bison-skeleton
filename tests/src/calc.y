@@ -51,19 +51,19 @@ program:
 
 input:
   line { $$ = $1; }
-| input line { $$ = $<RAW>2; }
+| input line { $$ = $2; }
 ;
 
 line:
   EOL                { $$ = Value::Expr("EOL".to_owned()); }
-| exp EOL            { println!("{:#?}", $<Borrow:Expr>exp); $$ = $1; }
-| error EOL          { println!("err recoery"); $$ = Value::Expr("ERR".to_owned()) }
+| exp EOL            { let exp = $<Expr>1; println!("{:#?}", exp); $$ = Value::Expr(exp); }
+| error EOL          { println!("err recovery"); $$ = Value::Expr("ERR".to_owned()) }
 ;
 
 exp:
-  NUM                { $$ = Value::Expr(String::from_utf8_lossy(&$<Token>1.1).into_owned()) }
+  NUM                { $$ = Value::Expr($<Token>1.to_string_lossy()) }
 | exp "=" exp {
-      if $1 != $3 {
+      if $<Expr>1 != $<Expr>3 {
           self.yyerror(&@$, &format!("calc: error: {:#?} != {:#?}", $1, $3));
       }
       $$ = Value::Expr("err".to_owned());
@@ -82,17 +82,17 @@ exp:
 
 %%
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 pub enum Value {
     None,
     Stolen,
-    Token(Token),
+    Token(TokenValue),
     Expr(String)
 }
 
 impl Value {
     pub fn from_token(token: Token) -> Self {
-        Self::Token(token)
+        Self::Token(token.1)
     }
 }
 
@@ -101,8 +101,8 @@ impl std::fmt::Debug for Value {
         match self {
             Value::None => f.write_str("Token::None"),
             Value::Stolen => f.write_str("Token::Stolen"),
-            Value::Token((token_type, token_value, loc)) => {
-              f.write_fmt(format_args!("Token::Token({}, {:?}, {:?})", token_type, token_value, loc))
+            Value::Token(token) => {
+              f.write_fmt(format_args!("Token::Token({:?})", token))
             },
             Value::Expr(expr) => f.write_fmt(format_args!("Token::Expr({})", expr))
         }

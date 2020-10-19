@@ -80,7 +80,7 @@ pub trait Lex {
 ][
 #@{derive(Debug)@}
 pub struct ]b4_parser_struct[ {
-    yylexer: Lexer,
+    pub yylexer: Lexer,
     // true if verbose error messages are enabled.
     #[allow(dead_code)]
     yy_error_verbose: bool,
@@ -95,36 +95,38 @@ pub struct ]b4_parser_struct[ {
 }
 
 macro_rules! cast_to_variant {
-    (RAW, $yystack:expr, yystack.owned_value_at($idx:expr)) => {
-        $yystack.owned_value_at($idx)
-    };
-
-    (Borrow:RAW, $yystack:expr, yystack.owned_value_at($idx:expr)) => {
-        $yystack.borrow_value_at($idx)
-    };
-
-    ($v:ident, $yystack:expr, yystack.owned_value_at($idx:expr)) => {
+    ($variant:ident, $value:expr) => {
         {
-            let v = $yystack.owned_value_at($idx);
-            match v {
-                Value::$v(v) => v,
-                _ => panic!("Expected {}, got {:#?}", stringify!($v), v)
-            }
-        }
-    };
-
-    (Borrow:$v:ident, $yystack:expr, yystack.owned_value_at($idx:expr)) => {
-        {
-            let v = $yystack.borrow_value_at($idx);
-            match v {
-                Value::$v(v) => v,
-                _ => panic!("Expected {}, got {:#?}", stringify!($v), v)
+            match $value {
+                Value::$variant(v) => v,
+                _ => panic!("Expected {}, got {:#?}", stringify!($variant), $value)
             }
         }
     };
 }
 
-pub type Token = (i32, Vec<u8>]b4_locations_if([, ]b4_location_type)[);
+#[derive(Debug, Clone)]
+pub enum TokenValue {
+    String(String),
+    InvalidString(Vec<u8>),
+}
+impl TokenValue {
+    pub fn to_string_lossy(&self) -> String {
+        match &self {
+            Self::String(s) => s.clone(),
+            Self::InvalidString(bytes) => String::from_utf8_lossy(&bytes).into_owned(),
+        }
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        match &self {
+            Self::String(s) => s.as_bytes().to_vec(),
+            Self::InvalidString(bytes) => bytes.clone(),
+        }
+    }
+}
+
+pub type Token = (i32, TokenValue]b4_locations_if([, ]b4_location_type)[);
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ]b4_location_type[ {
@@ -225,12 +227,12 @@ impl YYStack {
         }
     }
 
-    pub fn push(&mut self, state: i32, value: &]b4_yystype[]b4_locations_if([, loc: &]b4_location_type)[) {
+    pub fn push(&mut self, state: i32, value: ]b4_yystype[]b4_locations_if([, loc: ]b4_location_type)[) {
         self.state_stack.push(state);
         ]b4_locations_if([[
-        self.loc_stack.push(loc.clone());
+        self.loc_stack.push(loc);
         ]])[
-        self.value_stack.push(value.clone());
+        self.value_stack.push(value);
     }
 
     pub fn pop(&mut self) {
@@ -380,7 +382,7 @@ impl ]b4_parser_struct[ {
     *yylen = 0;
     /* Shift the result of the reduction.  */
     let yystate = self.yy_lr_goto_state(yystack.state_at(0).clone() as i32, Self::yyr1_[yyn_usize].into());
-    yystack.push(yystate.try_into().unwrap(), &yyval]b4_locations_if([, &yyloc])[);
+    yystack.push(yystate, yyval]b4_locations_if([, yyloc])[);
     return Self::YYNEWSTATE;
   }
 
@@ -424,7 +426,7 @@ impl ]b4_parser_struct[ {
     self.yynerrs = 0;
 
     /* Initialize the stack.  */
-    yystack.push (yystate, &yylval]b4_locations_if([, &yylloc])[);
+    yystack.push(yystate, yylval.clone()]b4_locations_if([, yylloc.clone()])[);
 ]m4_ifdef([b4_initial_action], [
 b4_dollar_pushdef([yylval], [], [], [yylloc])dnl
     b4_user_initial_action
@@ -513,7 +515,7 @@ b4_dollar_popdef[]dnl
                 }
 
                 yystate = yyn;
-                yystack.push (yystate, &yylval]b4_locations_if([, &yylloc])[);
+                yystack.push(yystate, yylval.clone()]b4_locations_if([, yylloc.clone()])[);
                 label = Self::YYNEWSTATE;
               }
             }
@@ -642,8 +644,8 @@ b4_dollar_popdef[]dnl
 
 ]b4_locations_if([[
         /* Muck with the stack to setup for yylloc.  */
-        yystack.push(0, &]b4_yystype[::None, &yylloc);
-        yystack.push(0, &]b4_yystype[::None, &yyerrloc);
+        yystack.push(0, ]b4_yystype[::None, yylloc.clone());
+        yystack.push(0, ]b4_yystype[::None, yyerrloc.clone());
         yyloc = make_yylloc(&yystack, 2);
         yystack.pop_n(2);]])[
 
@@ -653,7 +655,7 @@ b4_dollar_popdef[]dnl
                       &yylval]b4_locations_if([, &yyloc])[);]])[
 
         yystate = yyn;
-        yystack.push (yyn, &yylval]b4_locations_if([, &yyloc])[);
+        yystack.push(yyn, yylval.clone()]b4_locations_if([, yyloc.clone()])[);
         label = Self::YYNEWSTATE;
         continue;
       }, // YYERRLAB1
