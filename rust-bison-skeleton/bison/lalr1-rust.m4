@@ -124,7 +124,12 @@ impl TokenValue {
     }
 }
 
-pub type Token = (i32, TokenValue]b4_locations_if([, ]b4_location_type)[);
+#[derive(Debug, Clone)]
+pub struct Token {
+    pub token_type: i32,
+    pub token_value: TokenValue
+    ]b4_locations_if([, pub loc: ]b4_location_type)[
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ]b4_location_type[ {
@@ -453,10 +458,10 @@ b4_dollar_popdef[]dnl
         if yychar == Self::YYEMPTY_ {
 ]b4_parse_trace_if([[
             self.yycdebug("Reading a token");]])[
-            let yylex: Token = self.next_token();
-            yychar = yylex.0;
-            yylval = ]b4_yystype[::from_token(yylex.clone());]b4_locations_if([[
-            yylloc = yylex.2;]])[
+            let Token { token_type, token_value, loc } = self.next_token();
+            yychar = token_type;
+            yylval = ]b4_yystype[::from_token(token_value);]b4_locations_if([[
+            yylloc = loc;]])[
 ][
           }
 

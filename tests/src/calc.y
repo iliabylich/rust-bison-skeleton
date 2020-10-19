@@ -93,8 +93,8 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn from_token(token: Token) -> Self {
-        Self::TokenValue(token.1)
+    pub fn from_token(value: TokenValue) -> Self {
+        Self::TokenValue(value)
     }
 }
 
