@@ -88,8 +88,8 @@ m4_define([b4_identification],
 # Return the smallest int type able to handle numbers ranging from
 # MIN to MAX (included).
 m4_define([b4_int_type],
-[m4_if(b4_ints_in($@,   [-128],   [127]), [1], [i8],
-       b4_ints_in($@, [-32768], [32767]), [1], [i16],
+[m4_if(
+       b4_ints_in($@,      [0], [65535]), [1], [usize],
                                                [i32])])
 
 # b4_int_type_for(NAME)

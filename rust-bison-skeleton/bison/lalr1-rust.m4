@@ -34,7 +34,7 @@ m4_define([b4_define_state],[[
 
     /* State.  */
     let mut yyn: i32 = 0;
-    let mut yylen: i32 = 0;
+    let mut yylen: usize = 0;
     let mut yystate: i32 = 0;
     let mut yystack = YYStack::new();
     let mut label: i32 = Self::YYNEWSTATE;
@@ -59,7 +59,6 @@ m4_define([b4_define_state],[[
 ]b4_user_pre_prologue[
 ]b4_user_post_prologue[
 use std::convert::TryInto;
-use std::convert::TryFrom;
 
 ]
 b4_percent_code_get([[use]])[
@@ -92,6 +91,14 @@ pub struct ]b4_parser_struct[ {
     yyerrstatus_: i32,
 
     ]b4_percent_code_get([[parser_fields]])[
+}
+
+fn usize_to_i32(v: usize) -> i32 {
+    v.try_into().unwrap()
+}
+
+fn i32_to_usize(v: i32) -> usize {
+    v.try_into().unwrap()
 }
 
 macro_rules! cast_to_variant {
@@ -162,7 +169,7 @@ impl ]b4_parser_struct[ {
 }
 ]])
 [
-fn make_yylloc(rhs: &YYStack, n: i32) -> ]b4_location_type[ {
+fn make_yylloc(rhs: &YYStack, n: usize) -> ]b4_location_type[ {
     if 0 < n {
         ]b4_location_type[ { begin: rhs.location_at(n - 1).begin, end: rhs.location_at(0).end }
     } else {
@@ -239,7 +246,7 @@ impl YYStack {
         self.pop_n(1);
     }
 
-    pub fn pop_n(&mut self, num: i32) {
+    pub fn pop_n(&mut self, num: usize) {
         for _ in 0..num {
           self.state_stack.pop();
           ]b4_locations_if([[
@@ -249,25 +256,22 @@ impl YYStack {
         }
     }
 
-    pub fn state_at(&self, i: i32) -> &i32 {
-        self.state_stack.iter().rev().nth(i.try_into().unwrap()).unwrap()
+    pub fn state_at(&self, i: usize) -> i32 {
+        self.state_stack[self.len() - 1 - i]
     }
 ]b4_locations_if([[
 
-    pub fn location_at(&self, i: i32) -> &]b4_location_type[ {
-        self.loc_stack.iter().rev().nth(i.try_into().unwrap()).unwrap()
+    pub fn location_at(&self, i: usize) -> &]b4_location_type[ {
+        &self.loc_stack[self.len() - 1 - i]
     }
 ]])[
-    pub fn borrow_value_at(&self, i: i32) -> &]b4_yystype[ {
-        self.value_stack.iter().rev().nth(i.try_into().unwrap()).unwrap()
+    pub fn borrow_value_at(&self, i: usize) -> &]b4_yystype[ {
+        &self.value_stack[self.len() - 1 - i]
     }
 
-    pub fn owned_value_at(&mut self, i: i32) ->]b4_yystype[ {
-        let mut result =  ]b4_yystype[::Stolen;
-        let i_usize: usize = i.try_into().unwrap();
-        let len = self.value_stack.len();
-        std::mem::swap(&mut result, &mut self.value_stack[len - 1 - i_usize]);
-        result
+    pub fn owned_value_at(&mut self, i: usize) ->]b4_yystype[ {
+        let len = self.len();
+        std::mem::replace(&mut self.value_stack[len - 1 - i], ]b4_yystype[::Stolen)
     }
 
     pub fn len(&self) -> usize {
@@ -328,24 +332,24 @@ impl ]b4_parser_struct[ {
       self.yyerrstatus_ == 0
   }
 
-  /** Compute post-reduction state.
-   * @@param yystate   the current state
-   * @@param yysym     the nonterminal to push on the stack
-   */
-  fn yy_lr_goto_state(&self, yystate: i32, yysym: i32) -> i32 {
-      let _idx: usize = (yysym - Self::YYNTOKENS_).try_into().unwrap();
-      let yyr: i32 = Self::yypgoto_[_idx] as i32 + yystate;
-      if 0 <= yyr && yyr <= Self::YYLAST_ {
-        let yyr_usize: usize = yyr.try_into().unwrap();
-        if i32::from(Self::yycheck_[yyr_usize]) == yystate {
-          let result: i32 =  Self::yytable_[yyr_usize].into();
-          return result
+    /** Compute post-reduction state.
+    * @@param yystate   the current state
+    * @@param yysym     the nonterminal to push on the stack
+    */
+    fn yy_lr_goto_state(&self, yystate: i32, yysym: usize) -> i32 {
+        let yysym = usize_to_i32(yysym);
+        let idx = i32_to_usize(yysym - Self::YYNTOKENS_);
+        let yyr = Self::yypgoto_[idx] + yystate;
+        if 0 <= yyr && yyr <= Self::YYLAST_ {
+            let yyr = i32_to_usize(yyr);
+            if Self::yycheck_[yyr] == yystate {
+                return Self::yytable_[yyr];
+            }
         }
-      }
-      Self::yydefgoto_[_idx].into()
-  }
+        Self::yydefgoto_[idx]
+    }
 
-  fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack, yylen: &mut i32) -> i32 {][
+  fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack, yylen: &mut usize) -> i32 {][
     /* If YYLEN is nonzero, implement the default value of the action:
        '$$ = $1'.  Otherwise, use the top of the stack.
 
@@ -375,13 +379,12 @@ impl ]b4_parser_struct[ {
       _ => {}
     }
 
-    let yyn_usize: usize = yyn.try_into().unwrap();
-    self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[yyn_usize].try_into().unwrap()), &yyval]b4_locations_if([, &yyloc])[);]])[
+    self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[i32_to_usize(yyn)]), &yyval]b4_locations_if([, &yyloc])[);]])[
 
     yystack.pop_n(*yylen);
     *yylen = 0;
     /* Shift the result of the reduction.  */
-    let yystate = self.yy_lr_goto_state(yystack.state_at(0).clone() as i32, Self::yyr1_[yyn_usize].into());
+    let yystate = self.yy_lr_goto_state(yystack.state_at(0), Self::yyr1_[i32_to_usize(yyn)]);
     yystack.push(yystate, yyval]b4_locations_if([, yyloc])[);
     return Self::YYNEWSTATE;
   }
@@ -443,14 +446,13 @@ b4_dollar_popdef[]dnl
         self.yycdebug(&format!("Entering state {}", yystate));
         if 0 < self.yydebug { eprintln!("{:#?}", yystack) }]])[
 
-        /* Accept?  */
-        if i32::from(yystate) == Self::YYFINAL_ {
+        /* Accept? */
+        if yystate == Self::YYFINAL_ {
           return true;
         }
 
         /* Take a decision.  First try without lookahead.  */
-        let yystate_usize: usize = yystate.try_into().unwrap();
-        yyn = Self::yypact_[yystate_usize].into();
+        yyn = Self::yypact_[i32_to_usize(yystate)];
         if yy_pact_value_is_default(yyn) {
           label = Self::YYDEFAULT;
           continue;
@@ -485,14 +487,13 @@ b4_dollar_popdef[]dnl
             /* If the proper action on seeing token YYTOKEN is to reduce or to
                detect an error, take that action.  */
             yyn += yytoken.code();
-            // let yyn_usize: usize = yyn.try_into().unwrap();
-            if yyn < 0 || Self::YYLAST_ < yyn || i32::from(Self::yycheck_[usize::try_from(yyn).unwrap()]) != yytoken.code() {
+            if yyn < 0 || Self::YYLAST_ < yyn || i32::from(Self::yycheck_[i32_to_usize(yyn)]) != yytoken.code() {
               label = Self::YYDEFAULT;
             }
 
             /* <= 0 means reduce or error.  */
             else {
-              yyn = Self::yytable_[usize::try_from(yyn).unwrap()].into();
+              yyn = Self::yytable_[i32_to_usize(yyn)];
               if yyn <= 0 {
                 if yy_table_value_is_error(yyn) {
                   label = Self::YYERRLAB;
@@ -529,8 +530,7 @@ b4_dollar_popdef[]dnl
       | yydefault -- do the default action for the current state.  |
       `-----------------------------------------------------------*/
       Self::YYDEFAULT => {
-        let yystate_usize: usize = yystate.try_into().unwrap();
-        yyn = Self::yydefact_[yystate_usize].into();
+        yyn = usize_to_i32(Self::yydefact_[i32_to_usize(yystate)]);
         if yyn == 0 {
           label = Self::YYERRLAB;
         } else {
@@ -543,10 +543,9 @@ b4_dollar_popdef[]dnl
       | yyreduce -- Do a reduction.  |
       `-----------------------------*/
       Self::YYREDUCE => {
-        let yyn_usize: usize = yyn.try_into().unwrap();
-        yylen = Self::yyr2_[yyn_usize].into();
+        yylen = Self::yyr2_[i32_to_usize(yyn)];
         label = self.yyaction(yyn, &mut yystack, &mut yylen);
-        yystate = *yystack.state_at(0);
+        yystate = yystack.state_at(0);
         continue;
       }, // YYREDUCE
 
@@ -593,7 +592,7 @@ b4_dollar_popdef[]dnl
            this YYERROR.  */
         yystack.pop_n(yylen);
         yylen = 0;
-        yystate = yystack.state_at(0).clone();
+        yystate = yystack.state_at(0);
         label = Self::YYERRLAB1;
         continue;
       }, // YYERROR
@@ -606,15 +605,13 @@ b4_dollar_popdef[]dnl
 
         // Pop stack until we find a state that shifts the error token.
         loop {
-            let yystate_usize: usize = yystate.try_into().unwrap();
-            yyn = Self::yypact_[yystate_usize].into();
+            yyn = Self::yypact_[i32_to_usize(yystate)];
             if !yy_pact_value_is_default(yyn) {
                 yyn += SymbolKind { value: SymbolKind::S_YYerror }.code();
                 if 0 <= yyn && yyn <= Self::YYLAST_ {
-                  let yyn_usize: usize = yyn.try_into().unwrap();
-                  if i32::from(Self::yycheck_[yyn_usize]) == SymbolKind::S_YYerror
+                  if i32::from(Self::yycheck_[i32_to_usize(yyn)]) == SymbolKind::S_YYerror
                   {
-                    yyn = Self::yytable_[yyn_usize].into();
+                    yyn = Self::yytable_[i32_to_usize(yyn)];
                     if 0 < yyn {
                       break;
                     }
@@ -631,7 +628,7 @@ b4_dollar_popdef[]dnl
 ]b4_locations_if([[
             yyerrloc = yystack.location_at(0).clone();]])[
             yystack.pop();
-            yystate = yystack.state_at(0).clone();]b4_parse_trace_if([[
+            yystate = yystack.state_at(0);]b4_parse_trace_if([[
             if 0 < self.yydebug {
               eprintln!("{:#?}", yystack);]])[
             }
@@ -650,8 +647,7 @@ b4_dollar_popdef[]dnl
         yystack.pop_n(2);]])[
 
         /* Shift the error token.  */]b4_parse_trace_if([[
-        let yyn_usize: usize = yyn.try_into().unwrap();
-        self.yy_symbol_print("Shifting", SymbolKind::get(Self::yystos_[yyn_usize].try_into().unwrap()),
+        self.yy_symbol_print("Shifting", SymbolKind::get(Self::yystos_[i32_to_usize(yyn)]),
                       &yylval]b4_locations_if([, &yyloc])[);]])[
 
         yystate = yyn;
@@ -722,7 +718,7 @@ impl ]b4_parser_struct[ {
   * @@param yyvalue   the value to check
   */
 fn yy_pact_value_is_default(yyvalue: i32) -> bool {
-  return yyvalue == YYPACT_NINF_.into();
+  return yyvalue == YYPACT_NINF_;
 }
 
 /**
@@ -731,7 +727,7 @@ fn yy_pact_value_is_default(yyvalue: i32) -> bool {
   * @@param yyvalue the value to check
   */
 fn yy_table_value_is_error(yyvalue: i32) -> bool {
-  return yyvalue == YYTABLE_NINF_.into();
+  return yyvalue == YYTABLE_NINF_;
 }
 
 const YYPACT_NINF_: ]b4_int_type_for([b4_pact])[ = ]b4_pact_ninf[;
@@ -752,20 +748,19 @@ impl ]b4_parser_struct[ {
       return;
     }
 
-    let yyrule_usize: usize = yyrule.try_into().unwrap();
-    let yylno = Self::yyrline_[yyrule_usize];
-    let yynrhs = Self::yyr2_[yyrule_usize];
+    let yylno = Self::yyrline_[i32_to_usize(yyrule)];
+    let yynrhs = Self::yyr2_[i32_to_usize(yyrule)];
     /* Print the symbols being reduced, and their result.  */
     self.yycdebug(&format!("Reducing stack by rule {} (line {}):", yyrule - 1,
               yylno));
 
     /* The symbols being reduced.  */
     for yyi in 0..yynrhs {
-      let state: usize = yystack.state_at((yynrhs - (yyi + 1)).into()).clone().try_into().unwrap();
+      let state: usize = i32_to_usize(yystack.state_at(yynrhs - (yyi + 1)));
       self.yy_symbol_print(&format!("   ${} =", yyi + 1),
-                    SymbolKind::get(Self::yystos_[state].try_into().unwrap()),
-                    yystack.borrow_value_at(((yynrhs) - (yyi + 1)).into())]b4_locations_if([,
-                    yystack.location_at(((yynrhs) - (yyi + 1)).into())])[);
+                    SymbolKind::get(Self::yystos_[state]),
+                    yystack.borrow_value_at(yynrhs - (yyi + 1))]b4_locations_if([,
+                    yystack.location_at(yynrhs - (yyi + 1))])[);
     }
   }]])[
 
@@ -783,8 +778,8 @@ impl ]b4_parser_struct[ {
     if t <= 0 {
       return ]b4_symbol(0, kind)[;
     } else if t <= code_max {
-      let t_usize: usize = t.try_into().unwrap();
-      return SymbolKind::get(Self::yytranslate_table_[t_usize].try_into().unwrap()).clone();
+      let t = i32_to_usize(t);
+      return SymbolKind::get(Self::yytranslate_table_[t]).clone();
     } else {
       return ]b4_symbol(2, kind)[;
     }
