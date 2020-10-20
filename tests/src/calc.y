@@ -61,7 +61,7 @@ line:
 ;
 
 exp:
-  NUM                { $$ = Value::Expr($<TokenValue>1.to_string_lossy()) }
+  NUM                { $$ = Value::Expr($<Token>1.to_string_lossy()) }
 | exp "=" exp {
       if $<Expr>1 != $<Expr>3 {
           self.yyerror(&@$, &format!("calc: error: {:#?} != {:#?}", $1, $3));
@@ -88,21 +88,21 @@ type Expr = String;
 pub enum Value {
     None,
     Stolen,
-    TokenValue(TokenValue),
+    Token(Token),
     Expr(Expr)
 }
 
 impl Value {
-    pub fn from_token(value: TokenValue) -> Self {
-        Self::TokenValue(value)
+    pub fn from_token(value: Token) -> Self {
+        Self::Token(value)
     }
 }
 
-impl From<Value> for TokenValue {
-    fn from(value: Value) -> TokenValue {
+impl From<Value> for Token {
+    fn from(value: Value) -> Token {
         match value {
-            Value::TokenValue(v) => v,
-            other => panic!("expected TokenValue, got {:?}", other),
+            Value::Token(v) => v,
+            other => panic!("expected Token, got {:?}", other),
         }
     }
 }
@@ -121,9 +121,7 @@ impl std::fmt::Debug for Value {
         match self {
             Value::None => f.write_str("Token::None"),
             Value::Stolen => f.write_str("Token::Stolen"),
-            Value::TokenValue(token) => {
-              f.write_fmt(format_args!("Token::TokenValue({:?})", token))
-            },
+            Value::Token(token) => f.write_fmt(format_args!("Token::Token({:?})", token)),
             Value::Expr(expr) => f.write_fmt(format_args!("Token::Expr({})", expr))
         }
     }

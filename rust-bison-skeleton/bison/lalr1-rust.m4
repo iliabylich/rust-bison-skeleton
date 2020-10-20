@@ -131,6 +131,16 @@ pub struct Token {
     ]b4_locations_if([, pub loc: ]b4_location_type)[
 }
 
+impl Token {
+    pub fn to_string_lossy(&self) -> String {
+        self.token_value.to_string_lossy()
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.token_value.to_bytes()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct ]b4_location_type[ {
     pub begin: usize,
@@ -222,7 +232,7 @@ pub struct YYStack {
 }
 
 impl YYStack {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
           state_stack: vec![],
           loc_stack: vec![],
@@ -230,7 +240,7 @@ impl YYStack {
         }
     }
 
-    pub fn push(&mut self, state: i32, value: ]b4_yystype[]b4_locations_if([, loc: ]b4_location_type)[) {
+    pub(crate) fn push(&mut self, state: i32, value: ]b4_yystype[]b4_locations_if([, loc: ]b4_location_type)[) {
         self.state_stack.push(state);
         ]b4_locations_if([[
         self.loc_stack.push(loc);
@@ -238,11 +248,11 @@ impl YYStack {
         self.value_stack.push(value);
     }
 
-    pub fn pop(&mut self) {
+    pub(crate) fn pop(&mut self) {
         self.pop_n(1);
     }
 
-    pub fn pop_n(&mut self, num: usize) {
+    pub(crate) fn pop_n(&mut self, num: usize) {
         for _ in 0..num {
           self.state_stack.pop();
           ]b4_locations_if([[
@@ -252,25 +262,25 @@ impl YYStack {
         }
     }
 
-    pub fn state_at(&self, i: usize) -> i32 {
+    pub(crate) fn state_at(&self, i: usize) -> i32 {
         self.state_stack[self.len() - 1 - i]
     }
 ]b4_locations_if([[
 
-    pub fn location_at(&self, i: usize) -> &]b4_location_type[ {
+    pub(crate) fn location_at(&self, i: usize) -> &]b4_location_type[ {
         &self.loc_stack[self.len() - 1 - i]
     }
 ]])[
-    pub fn borrow_value_at(&self, i: usize) -> &]b4_yystype[ {
+    pub(crate) fn borrow_value_at(&self, i: usize) -> &]b4_yystype[ {
         &self.value_stack[self.len() - 1 - i]
     }
 
-    pub fn owned_value_at(&mut self, i: usize) ->]b4_yystype[ {
+    pub(crate) fn owned_value_at(&mut self, i: usize) ->]b4_yystype[ {
         let len = self.len();
         std::mem::replace(&mut self.value_stack[len - 1 - i], ]b4_yystype[::Stolen)
     }
 
-    pub fn len(&self) -> usize {
+    pub(crate) fn len(&self) -> usize {
       self.state_stack.len()
     }
 
@@ -458,10 +468,10 @@ b4_dollar_popdef[]dnl
         if yychar == Self::YYEMPTY_ {
 ]b4_parse_trace_if([[
             self.yycdebug("Reading a token");]])[
-            let Token { token_type, token_value, loc } = self.next_token();
-            yychar = token_type;
-            yylval = ]b4_yystype[::from_token(token_value);]b4_locations_if([[
-            yylloc = loc;]])[
+            let token = self.next_token();
+            yychar = token.token_type;]b4_locations_if([[
+            yylloc = token.loc.clone();]])[
+            yylval = ]b4_yystype[::from_token(token);
 ][
           }
 
@@ -674,7 +684,7 @@ b4_dollar_popdef[]dnl
 ][
 
 #@{derive(Debug)@}
-pub struct Context {
+pub(crate) struct Context {
     yystack: YYStack,
     yytoken: SymbolKind,
     loc: ]b4_location_type[
