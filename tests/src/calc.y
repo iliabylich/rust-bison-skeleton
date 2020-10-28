@@ -147,6 +147,14 @@ impl Parser {
     fn next_token(&mut self) -> Token {
         self.yylexer.yylex()
     }
+
+    fn report_syntax_error(&self, ctx: &Context) {
+        eprintln!("{:#?}", ctx)
+    }
+
+    fn yyerror(&mut self, loc: &Loc, msg: &str) {
+        eprintln!("{:#?} {:#?}", loc, msg)
+    }
 }
 
 #[derive(Debug)]
@@ -199,13 +207,5 @@ impl Lexer {
 
     fn yylex(&mut self) -> Token {
         self.tokens.remove(0)
-    }
-
-    fn report_syntax_error(&self, ctx: &Context) {
-        eprintln!("{:#?}", ctx)
-    }
-
-    fn yyerror(&mut self, loc: &Loc, msg: &str) {
-        eprintln!("{:#?} {:#?}", loc, msg)
     }
 }

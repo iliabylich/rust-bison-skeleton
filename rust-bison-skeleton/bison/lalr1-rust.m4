@@ -197,14 +197,6 @@ b4_parse_trace_if([[
 ]])[
 
 ]b4_locations_if([[
-  /**
-   * Print an error message via the lexer.
-   * @@param loc The location associated with the message.
-   * @@param msg The error message.
-   */
-  pub(crate) fn yyerror(&mut self, loc: &]b4_location_type[, msg: &str) {
-      self.yylexer.yyerror(loc, msg);
-  }
   ]])[
 ]b4_parse_trace_if([[
   fn yycdebug(&self, s: &str) {
@@ -215,7 +207,7 @@ b4_parse_trace_if([[
 
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct YYStack {
     state_stack: Vec<i32>,
     loc_stack: Vec<]b4_location_type[>,
@@ -277,7 +269,7 @@ impl YYStack {
 
 }
 
-impl std::fmt::Debug for YYStack {
+impl std::fmt::Display for YYStack {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let state = self.state_stack.iter().map(|e| e.to_string()).collect::<Vec<String>>().join(" ");
         f.write_fmt(format_args!("Stack now {}", state))
@@ -438,7 +430,7 @@ b4_dollar_popdef[]dnl
 
       Self::YYNEWSTATE => {]b4_parse_trace_if([[
         self.yycdebug(&format!("Entering state {}", yystate));
-        if 0 < self.yydebug { eprintln!("{:#?}", yystack) }]])[
+        if 0 < self.yydebug { eprintln!("{}", yystack) }]])[
 
         /* Accept? */
         if yystate == Self::YYFINAL_ {
@@ -624,7 +616,7 @@ b4_dollar_popdef[]dnl
             yystack.pop();
             yystate = yystack.state_at(0);]b4_parse_trace_if([[
             if 0 < self.yydebug {
-              eprintln!("{:#?}", yystack);]])[
+              eprintln!("{}", yystack);]])[
             }
           }
 
@@ -695,17 +687,6 @@ impl Context {
 }
 
 ][
-
-impl ]b4_parser_struct[ {
-    /**
-     * Build and emit a "syntax error" message in a user-defined way.
-     *
-     * @@param ctx  The context of the error.
-     */
-    fn report_syntax_error(&self, yyctx: &Context) {
-        self.yylexer.report_syntax_error(yyctx);
-    }
-}
 
 /**
   * Whether the given <code>yypact_</code> value indicates a defaulted state.
