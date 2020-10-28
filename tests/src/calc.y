@@ -1,8 +1,8 @@
 %expect 0
 
-%define api.parser.struct { Parser }
-%define api.location.type { Loc }
-%define api.value.type { Value }
+%define api.parser.struct {Parser}
+%define api.location.type {Loc}
+%define api.value.type {Value}
 
 %define parse.error custom
 %define parse.trace
@@ -46,7 +46,7 @@
 /* Grammar follows */
 %%
 program:
-  input { self.result = Some($<Expr>1.clone()); $$ = Value::None; }
+  input { self.result = Some($<Expr>1); $$ = Value::None; }
 ;
 
 input:
@@ -56,7 +56,7 @@ input:
 
 line:
   EOL                { $$ = Value::Expr("EOL".to_owned()); }
-| exp EOL            { let exp = $<Expr>1; println!("{:#?}", exp); $$ = Value::Expr(exp); }
+| exp EOL            { let exp = $<Expr>1; println!("{:?}", exp); $$ = Value::Expr(exp); }
 | error EOL          { println!("err recovery"); $$ = Value::Expr("ERR".to_owned()) }
 ;
 
@@ -64,18 +64,18 @@ exp:
   NUM                { $$ = Value::Expr($<Token>1.to_string_lossy()) }
 | exp "=" exp {
       if $<Expr>1 != $<Expr>3 {
-          self.yyerror(&@$, &format!("calc: error: {:#?} != {:#?}", $1, $3));
+          self.yyerror(&@$, &format!("calc: error: {:?} != {:?}", $1, $3));
       }
       $$ = Value::Expr("err".to_owned());
   }
-| exp "+" exp        { $$ = Value::Expr(format!("{:#?} + {:#?}", $<Expr>1, $<Expr>3)); }
-| exp "-" exp        { $$ = Value::Expr(format!("{:#?} - {:#?}", $<Expr>1, $<Expr>3)); }
-| exp "*" exp        { $$ = Value::Expr(format!("{:#?} * {:#?}", $<Expr>1, $<Expr>3)); }
-| exp "/" exp        { $$ = Value::Expr(format!("{:#?}/+ {:#?}", $<Expr>1, $<Expr>3)); }
-| "-" exp  %prec NEG { $$ = Value::Expr(format!("-{:#?}", $<Expr>2)); }
-| exp "^" exp        { $$ = Value::Expr(format!("{:#?} ^ {:#?}", $<Expr>1, $<Expr>3)); }
-| "(" exp ")"        { $$ = Value::Expr(format!("({:#?})", $<Expr>2)); }
-| "(" error ")"      { $$ = Value::Expr(format!("(err)")); }
+| exp "+" exp        { $$ = Value::Expr(format!("({} + {})", $<Expr>1, $<Expr>3)); }
+| exp "-" exp        { $$ = Value::Expr(format!("({} - {})", $<Expr>1, $<Expr>3)); }
+| exp "*" exp        { $$ = Value::Expr(format!("({} * {})", $<Expr>1, $<Expr>3)); }
+| exp "/" exp        { $$ = Value::Expr(format!("({}/+ {})", $<Expr>1, $<Expr>3)); }
+| "-" exp  %prec NEG { $$ = Value::Expr(format!("(-{})", $<Expr>2)); }
+| exp "^" exp        { $$ = Value::Expr(format!("({} ^ {})", $<Expr>1, $<Expr>3)); }
+| "(" exp ")"        { $$ = Value::Expr(format!("({})", $<Expr>2)); }
+| "(" error ")"      { $$ = Value::Expr("(err)".to_owned()); }
 | "!"                { return Self::YYERROR; }
 | "-" error          { return Self::YYERROR; }
 ;
@@ -155,7 +155,45 @@ pub struct Lexer {
 }
 
 impl Lexer {
-    pub fn new(tokens: Vec<Token>) -> Self {
+    pub fn new(src: &str) -> Self {
+        let mut tokens = vec![];
+
+        for (idx, c) in src.chars().enumerate() {
+            let token_type = match c {
+                '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9' => Self::NUM,
+                '!' => Self::BANG,
+                '+' => Self::PLUS,
+                '-' => Self::MINUS,
+                '*' => Self::STAR,
+                '/' => Self::SLASH,
+                '^' => Self::CARET,
+                '(' => Self::LPAREN,
+                ')' => Self::RPAREN,
+                '=' => Self::EQUAL,
+                '\n' => Self::EOL,
+                ' ' => continue,
+                _ => panic!("unknown char {}", c)
+            };
+            let token = Token {
+                token_type,
+                token_value: TokenValue::String(c.to_string()),
+                loc: Loc {
+                    begin: idx,
+                    end: idx + 1,
+                },
+            };
+            tokens.push(token)
+        }
+        tokens.push(
+            Token {
+                token_type: Self::YYEOF,
+                token_value: TokenValue::String("".to_owned()),
+                loc: Loc { begin: src.len(), end: src.len() + 1 },
+            },
+        );
+
+        // panic!("tokens = {:?}", tokens);
+
         Self { tokens }
     }
 

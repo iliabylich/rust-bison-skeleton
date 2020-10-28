@@ -63,18 +63,8 @@ use std::convert::TryInto;
 ]
 b4_percent_code_get([[use]])[
 
-/*
-pub trait Lex {
-    fn yylex(&mut self) -> Token;
-    fn report_syntax_error(&self, ctx: &Context);
-    fn yyerror(&mut self, loc: &Loc, msg: &str);
-}
-*/
-
 /**
  * A Bison parser, automatically generated from <tt>]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[</tt>.
- *
- * @@author LALR (1) parser skeleton written by Paolo Bonzini.
  */
 ][
 #@{derive(Debug)@}
@@ -127,8 +117,8 @@ impl TokenValue {
 #[derive(Debug, Clone)]
 pub struct Token {
     pub token_type: i32,
-    pub token_value: TokenValue
-    ]b4_locations_if([, pub loc: ]b4_location_type)[
+    pub token_value: TokenValue,
+    ]b4_locations_if([pub loc: ]b4_location_type)[
 }
 
 impl Token {
@@ -163,13 +153,13 @@ impl ]b4_parser_struct[ {
     /**
     * Whether verbose error messages are enabled.
     */
-    pub fn error_verbose(&self) -> bool { self.yy_error_verbose }
+    pub(crate) fn error_verbose(&self) -> bool { self.yy_error_verbose }
 
     /**
     * Set the verbosity of error messages.
     * @@param verbose True to request verbose error messages.
     */
-    pub fn set_error_verbose(&mut self, verbose: bool) {
+    pub(crate) fn set_error_verbose(&mut self, verbose: bool) {
         self.yy_error_verbose = verbose;
     }
 }
@@ -196,7 +186,8 @@ impl Lexer {
     const EOF: i32 = Self::]b4_symbol(0, id)[;
 
     // Token values
-][pub const TOKEN_NAMES: &'static [&'static str] = &]b4_token_values[;
+    #@{allow(dead_code)@}
+][pub(crate) const TOKEN_NAMES: &'static [&'static str] = &]b4_token_values[;
 }
 ]
 
@@ -211,7 +202,7 @@ b4_parse_trace_if([[
    * @@param loc The location associated with the message.
    * @@param msg The error message.
    */
-  pub fn yyerror(&mut self, loc: &]b4_location_type[, msg: &str) {
+  pub(crate) fn yyerror(&mut self, loc: &]b4_location_type[, msg: &str) {
       self.yylexer.yyerror(loc, msg);
   }
   ]])[
@@ -298,13 +289,13 @@ impl ]b4_parser_struct[ {
    * Returned by a Bison action in order to stop the parsing process and
    * return success (<tt>true</tt>).
    */
-  pub const YYACCEPT: i32 = 0;
+  pub(crate) const YYACCEPT: i32 = 0;
 
   /**
    * Returned by a Bison action in order to stop the parsing process and
    * return failure (<tt>false</tt>).
    */
-  pub const YYABORT: i32 = 1;
+  pub(crate) const YYABORT: i32 = 1;
 
 ][
 
@@ -312,19 +303,19 @@ impl ]b4_parser_struct[ {
    * Returned by a Bison action in order to start error recovery without
    * printing an error message.
    */
-  pub const YYERROR: i32 = 2;
+  pub(crate) const YYERROR: i32 = 2;
 
   /**
    * Internal return codes that are not supported for user semantic
    * actions.
    */
-  pub const YYERRLAB: i32 = 3;
-  pub const YYNEWSTATE: i32 = 4;
-  pub const YYDEFAULT: i32 = 5;
-  pub const YYREDUCE: i32 = 6;
-  pub const YYERRLAB1: i32 = 7;
+  pub(crate) const YYERRLAB: i32 = 3;
+  pub(crate) const YYNEWSTATE: i32 = 4;
+  pub(crate) const YYDEFAULT: i32 = 5;
+  pub(crate) const YYREDUCE: i32 = 6;
+  pub(crate) const YYERRLAB1: i32 = 7;
   #@{allow(dead_code)@}
-  pub const YYRETURN: i32 = 8;
+  pub(crate) const YYRETURN: i32 = 8;
 ][
 
 ][
@@ -334,7 +325,7 @@ impl ]b4_parser_struct[ {
    * operation.
    */
   #@{allow(dead_code)@}
-  pub fn recovering(&self) -> bool {
+  pub(crate) fn recovering(&self) -> bool {
       self.yyerrstatus_ == 0
   }
 
@@ -374,15 +365,12 @@ impl ]b4_parser_struct[ {
         _ => {}
     }]b4_parse_trace_if([[
 
-    match yyval {
-      ]b4_yystype[::None => {
+    if let ]b4_yystype[::None = yyval {
         yyval = if 0 < *yylen {
-          yystack.borrow_value_at(*yylen - 1).clone()
+            yystack.borrow_value_at(*yylen - 1).clone()
         } else {
-          yystack.borrow_value_at(0).clone()
+            yystack.borrow_value_at(0).clone()
         }
-      },
-      _ => {}
     }
 
     self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[i32_to_usize(yyn)]), &yyval]b4_locations_if([, &yyloc])[);]])[
@@ -392,7 +380,7 @@ impl ]b4_parser_struct[ {
     /* Shift the result of the reduction.  */
     let yystate = self.yy_lr_goto_state(yystack.state_at(0), Self::yyr1_[i32_to_usize(yyn)]);
     yystack.push(yystate, yyval]b4_locations_if([, yyloc])[);
-    return Self::YYNEWSTATE;
+    Self::YYNEWSTATE
   }
 
 ]b4_parse_trace_if([[
@@ -493,7 +481,7 @@ b4_dollar_popdef[]dnl
             /* If the proper action on seeing token YYTOKEN is to reduce or to
                detect an error, take that action.  */
             yyn += yytoken.code();
-            if yyn < 0 || Self::YYLAST_ < yyn || i32::from(Self::yycheck_[i32_to_usize(yyn)]) != yytoken.code() {
+            if yyn < 0 || Self::YYLAST_ < yyn || Self::yycheck_[i32_to_usize(yyn)] != yytoken.code() {
               label = Self::YYDEFAULT;
             }
 
@@ -615,9 +603,9 @@ b4_dollar_popdef[]dnl
             if !yy_pact_value_is_default(yyn) {
                 yyn += SymbolKind { value: SymbolKind::S_YYerror }.code();
                 if 0 <= yyn && yyn <= Self::YYLAST_ {
-                  if i32::from(Self::yycheck_[i32_to_usize(yyn)]) == SymbolKind::S_YYerror
-                  {
-                    yyn = Self::yytable_[i32_to_usize(yyn)];
+                  let yyn_usize = i32_to_usize(yyn);
+                  if Self::yycheck_[yyn_usize] == SymbolKind::S_YYerror {
+                    yyn = Self::yytable_[yyn_usize];
                     if 0 < yyn {
                       break;
                     }
@@ -691,17 +679,17 @@ pub(crate) struct Context {
 }
 
 impl Context {
-    pub fn new(stack: YYStack, token: SymbolKind, loc: ]b4_location_type[) -> Self {
+    pub(crate) fn new(stack: YYStack, token: SymbolKind, loc: ]b4_location_type[) -> Self {
         Self { yystack: stack, yytoken: token, loc }
     }
 
     #@{allow(dead_code)@}
-    pub fn token(&self) -> &SymbolKind {
+    pub(crate) fn token(&self) -> &SymbolKind {
         &self.yytoken
     }
 
     #@{allow(dead_code)@}
-    pub fn location(&self) -> &]b4_location_type[ {
+    pub(crate) fn location(&self) -> &]b4_location_type[ {
         &self.loc
     }
 }
@@ -724,7 +712,7 @@ impl ]b4_parser_struct[ {
   * @@param yyvalue   the value to check
   */
 fn yy_pact_value_is_default(yyvalue: i32) -> bool {
-  return yyvalue == YYPACT_NINF_;
+    yyvalue == YYPACT_NINF_
 }
 
 /**
@@ -733,7 +721,7 @@ fn yy_pact_value_is_default(yyvalue: i32) -> bool {
   * @@param yyvalue the value to check
   */
 fn yy_table_value_is_error(yyvalue: i32) -> bool {
-  return yyvalue == YYTABLE_NINF_;
+    yyvalue == YYTABLE_NINF_
 }
 
 const YYPACT_NINF_: ]b4_int_type_for([b4_pact])[ = ]b4_pact_ninf[;
@@ -781,14 +769,14 @@ impl ]b4_parser_struct[ {
 [[  {
     // Last valid token kind.
     let code_max: i32 = ]b4_code_max[;
-    if t <= 0 {
-      return ]b4_symbol(0, kind)[;
-    } else if t <= code_max {
-      let t = i32_to_usize(t);
-      return SymbolKind::get(Self::yytranslate_table_[t]).clone();
-    } else {
-      return ]b4_symbol(2, kind)[;
-    }
+      if t <= 0 {
+          ]b4_symbol(0, kind)[
+      } else if t <= code_max {
+        let t = i32_to_usize(t);
+          SymbolKind::get(Self::yytranslate_table_[t]).clone()
+      } else {
+          ]b4_symbol(2, kind)[
+      }
   }
   ]b4_integral_parser_table_define([translate_table], [b4_translate])[
 ]])[

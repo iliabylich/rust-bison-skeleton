@@ -60,12 +60,12 @@ pub fn process_bison_file(filepath: &Path) -> Result<(), Box<dyn Error>> {
     let output = Command::new("bison").args(args).output()?;
 
     if output.status.success() {
-        return Ok(());
+        Ok(())
     } else {
         let stderr = String::from_utf8(output.stderr).unwrap();
-        return Err(Box::new(BisonErr {
+        Err(Box::new(BisonErr {
             message: stderr,
             code: output.status.code(),
-        }));
+        }))
     }
 }

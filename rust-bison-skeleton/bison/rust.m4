@@ -72,10 +72,6 @@ m4_define([b4_identification],
 [    // Version number for the Bison executable that generated this parser.
     #@{allow(dead_code)@}
     const BISON_VERSION: &'static str = "b4_version";
-
-    // Name of the skeleton that generated this parser.
-    #@{allow(dead_code)@}
-    const BISON_SKELETON: &'static str = b4_skeleton;
 ])
 
 
@@ -137,7 +133,7 @@ m4_define([b4_token_enum],
 [b4_token_visible_if([$1],
     [m4_format([[    // Token %s, to be returned by the scanner.
     #@{allow(non_upper_case_globals, dead_code)@}
-    pub const %s: i32 = %s%s;
+    pub(crate) const %s: i32 = %s%s;
 ]],
                b4_symbol([$1], [tag]),
                b4_symbol([$1], [id]),
@@ -219,12 +215,12 @@ b4_symbol_foreach([b4_symbol_enum])
         ], b4_symbol_numbers)
     @};
 [
-    pub fn get(n: usize) -> &'static SymbolKind {
+    pub(crate) fn get(n: usize) -> &'static SymbolKind {
         &Self::VALUES_[n]
     }
 
-    pub fn code(&self) -> i32 {
-      self.value
+    pub(crate) fn code(&self) -> i32 {
+        self.value
     }
 
 ]b4_parse_error_bmatch(
@@ -261,7 +257,7 @@ b4_symbol_foreach([b4_symbol_enum])
                 }
             }
         }
-        return yystr.to_owned();
+        yystr.to_owned()
     }
 
     /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
@@ -270,8 +266,8 @@ b4_symbol_foreach([b4_symbol_enum])
     b4_typed_parser_table_define([&'static str], [tname], [b4_tname])[
 
     /* The user-facing name of this symbol.  */
-    pub fn name(&self) -> Option<String> {
-        return Some(Self::yytnamerr_(Self::yytname_[self.value]?)).map(|s| s.to_owned());
+    pub(crate) fn name(&self) -> Option<String> {
+        Some(Self::yytnamerr_(Self::yytname_[self.value]?)).map(|s| s.to_owned())
     }
 ]],
 [custom\|detailed],
@@ -280,9 +276,9 @@ b4_symbol_foreach([b4_symbol_enum])
     b4_typed_parser_table_define([&'static str], [names], [b4_symbol_names])[
 
     /* The user-facing name of this symbol.  */
-    pub fn name(&self) -> String {
+    pub(crate) fn name(&self) -> String {
         let code: usize = self.code().try_into().unwrap();
-        return Self::yynames_[code].to_owned();
+        Self::yynames_[code].to_owned()
     }]])[
 }
 ]])])
