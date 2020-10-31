@@ -3,6 +3,7 @@
 %define api.parser.struct {Parser}
 %define api.location.type {Loc}
 %define api.value.type {Value}
+%define api.parse_error.type {ParseError}
 
 %define parse.error custom
 %define parse.trace
@@ -57,16 +58,13 @@ input:
 line:
   EOL                { $$ = Value::Expr("EOL".to_owned()); }
 | exp EOL            { let exp = $<Expr>1; println!("{:?}", exp); $$ = Value::Expr(exp); }
-| error EOL          { println!("err recovery"); $$ = Value::Expr("ERR".to_owned()) }
+| error EOL          { println!("err recovery"); $$ = Value::Expr("Recovered error".to_owned()) }
 ;
 
 exp:
   NUM                { $$ = Value::Expr($<Token>1.to_string_lossy()) }
 | exp "=" exp {
-      if $<Expr>1 != $<Expr>3 {
-          self.yyerror(&@$, &format!("calc: error: {:?} != {:?}", $1, $3));
-      }
-      $$ = Value::Expr("err".to_owned());
+      $$ = self.make_comparison(&@$, $<Expr>1, $<Expr>3)?;
   }
 | exp "+" exp        { $$ = Value::Expr(format!("({} + {})", $<Expr>1, $<Expr>3)); }
 | exp "-" exp        { $$ = Value::Expr(format!("({} - {})", $<Expr>1, $<Expr>3)); }
@@ -76,12 +74,13 @@ exp:
 | exp "^" exp        { $$ = Value::Expr(format!("({} ^ {})", $<Expr>1, $<Expr>3)); }
 | "(" exp ")"        { $$ = Value::Expr(format!("({})", $<Expr>2)); }
 | "(" error ")"      { $$ = Value::Expr("(err)".to_owned()); }
-| "!"                { return Self::YYERROR; }
-| "-" error          { return Self::YYERROR; }
+| "!"                { return Ok(Self::YYERROR); }
+| "-" error          { return Ok(Self::YYERROR); }
 ;
 
 %%
 
+type ParseError = String;
 type Expr = String;
 
 #[derive(Clone)]
@@ -132,7 +131,7 @@ impl Parser {
         Self {
             yy_error_verbose: true,
             yynerrs: 0,
-            yydebug: 0,
+            yydebug: false,
             yyerrstatus_: 0,
             yylexer: lexer,
             result: None
@@ -149,11 +148,14 @@ impl Parser {
     }
 
     fn report_syntax_error(&self, ctx: &Context) {
-        eprintln!("{:#?}", ctx)
+        eprintln!("report_syntax_error: {:#?}", ctx)
     }
 
-    fn yyerror(&mut self, loc: &Loc, msg: &str) {
-        eprintln!("{:#?} {:#?}", loc, msg)
+    fn make_comparison(&mut self, _: &Loc, lhs: Expr, rhs: Expr) -> Result<Value, ParseError> {
+        if lhs != rhs {
+            return Err("comparison failed".to_owned());
+        }
+        Ok(Value::Expr("LHS == RHS".to_owned()))
     }
 }
 

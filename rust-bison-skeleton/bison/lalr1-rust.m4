@@ -76,7 +76,7 @@ pub struct ]b4_parser_struct[ {
     // number of errors so far
     yynerrs: i32,
 
-    pub yydebug: i32,
+    pub yydebug: bool,
 
     yyerrstatus_: i32,
 
@@ -200,7 +200,7 @@ b4_parse_trace_if([[
   ]])[
 ]b4_parse_trace_if([[
   fn yycdebug(&self, s: &str) {
-    if 0 < self.yydebug {
+    if self.yydebug {
         eprintln!("{}", s);
     }
   }]])[
@@ -338,7 +338,7 @@ impl ]b4_parser_struct[ {
         Self::yydefgoto_[idx]
     }
 
-  fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack, yylen: &mut usize) -> i32 {][
+  fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack, yylen: &mut usize) -> Result<i32, ]b4_parse_error_type[> {][
     /* If YYLEN is nonzero, implement the default value of the action:
        '$$ = $1'.  Otherwise, use the top of the stack.
 
@@ -372,7 +372,7 @@ impl ]b4_parser_struct[ {
     /* Shift the result of the reduction.  */
     let yystate = self.yy_lr_goto_state(yystack.state_at(0), Self::yyr1_[i32_to_usize(yyn)]);
     yystack.push(yystate, yyval]b4_locations_if([, yyloc])[);
-    Self::YYNEWSTATE
+    Ok(Self::YYNEWSTATE)
   }
 
 ]b4_parse_trace_if([[
@@ -382,7 +382,7 @@ impl ]b4_parser_struct[ {
 
   fn yy_symbol_print(&self, s: &str, yykind: &SymbolKind,
                              yyvalue: &]b4_yystype[]b4_locations_if([, yylocation: &]b4_location_type[])[) {
-      if 0 < self.yydebug {
+      if self.yydebug {
           self.yycdebug(
             &format!("{}{} {:?} ( {:?}: {:?} )",
               s,
@@ -430,7 +430,7 @@ b4_dollar_popdef[]dnl
 
       Self::YYNEWSTATE => {]b4_parse_trace_if([[
         self.yycdebug(&format!("Entering state {}", yystate));
-        if 0 < self.yydebug { eprintln!("{}", yystack) }]])[
+        if self.yydebug { eprintln!("{}", yystack) }]])[
 
         /* Accept? */
         if yystate == Self::YYFINAL_ {
@@ -530,7 +530,10 @@ b4_dollar_popdef[]dnl
       `-----------------------------*/
       Self::YYREDUCE => {
         yylen = Self::yyr2_[i32_to_usize(yyn)];
-        label = self.yyaction(yyn, &mut yystack, &mut yylen);
+        label = match self.yyaction(yyn, &mut yystack, &mut yylen) {
+            Ok(label) => label,
+            Err(_) => Self::YYERROR
+        };
         yystate = yystack.state_at(0);
         continue;
       }, // YYREDUCE
@@ -615,7 +618,7 @@ b4_dollar_popdef[]dnl
             yyerrloc = yystack.location_at(0).clone();]])[
             yystack.pop();
             yystate = yystack.state_at(0);]b4_parse_trace_if([[
-            if 0 < self.yydebug {
+            if self.yydebug {
               eprintln!("{}", yystack);]])[
             }
           }
@@ -719,7 +722,7 @@ impl ]b4_parser_struct[ {
 
   // Report on the debug stream that the rule yyrule is going to be reduced.
   fn yy_reduce_print(&self, yyrule: i32, yystack: &YYStack) {
-    if self.yydebug == 0 {
+    if !self.yydebug {
       return;
     }
 
