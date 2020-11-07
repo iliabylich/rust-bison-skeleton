@@ -47,7 +47,7 @@ m4_define([b4_define_state],[[
     let mut yylloc: ]b4_location_type[ = ]b4_location_type[ { begin: 0, end: 0 };]])[
 
     /* Semantic value of the lookahead.  */
-    let mut yylval: ]b4_yystype[ = ]b4_yystype[::None;
+    let mut yylval: ]b4_yystype[ = ]b4_yystype[::Uninitialized;
 ]])[
 
 ]b4_output_begin([b4_parser_file_name])[
@@ -346,7 +346,7 @@ impl ]b4_parser_struct[ {
        This behavior is undocumented and Bison
        users should not rely upon it.  */
     #@{allow(unused_assignments)@}
-    let mut yyval: ]b4_yystype[ = ]b4_yystype[::None;
+    let mut yyval: ]b4_yystype[ = ]b4_yystype[::Uninitialized;
     ]b4_locations_if([[
     let yyloc: ]b4_location_type[ = make_yylloc(&yystack, *yylen);]])[]b4_parse_trace_if([[
 
@@ -357,12 +357,8 @@ impl ]b4_parser_struct[ {
         _ => {}
     }]b4_parse_trace_if([[
 
-    if let ]b4_yystype[::None = yyval {
-        yyval = if 0 < *yylen {
-            yystack.borrow_value_at(*yylen - 1).clone()
-        } else {
-            yystack.borrow_value_at(0).clone()
-        }
+    if let ]b4_yystype[::Uninitialized = yyval {
+        panic!("yyval is Uninitialized in rule at line {}", Self::yyrline_[i32_to_usize(yyn)]);
     }
 
     self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[i32_to_usize(yyn)]), &yyval]b4_locations_if([, &yyloc])[);]])[
@@ -630,8 +626,8 @@ b4_dollar_popdef[]dnl
 
 ]b4_locations_if([[
         /* Muck with the stack to setup for yylloc.  */
-        yystack.push(0, ]b4_yystype[::None, yylloc.clone());
-        yystack.push(0, ]b4_yystype[::None, yyerrloc.clone());
+        yystack.push(0, ]b4_yystype[::Uninitialized, yylloc.clone());
+        yystack.push(0, ]b4_yystype[::Uninitialized, yyerrloc.clone());
         yyloc = make_yylloc(&yystack, 2);
         yystack.pop_n(2);]])[
 

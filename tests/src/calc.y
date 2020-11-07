@@ -86,6 +86,7 @@ type Expr = String;
 #[derive(Clone)]
 pub enum Value {
     None,
+    Uninitialized,
     Stolen,
     Token(Token),
     Expr(Expr)
@@ -119,6 +120,7 @@ impl std::fmt::Debug for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { //'
         match self {
             Value::None => f.write_str("Token::None"),
+            Value::Uninitialized => f.write_str("Token::Uninitialized"),
             Value::Stolen => f.write_str("Token::Stolen"),
             Value::Token(token) => f.write_fmt(format_args!("Token::Token({:?})", token)),
             Value::Expr(expr) => f.write_fmt(format_args!("Token::Expr({})", expr))
