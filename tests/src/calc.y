@@ -3,7 +3,6 @@
 %define api.parser.struct {Parser}
 %define api.location.type {Loc}
 %define api.value.type {Value}
-%define api.parse_error.type {ParseError}
 
 %define parse.error custom
 %define parse.trace
@@ -80,7 +79,6 @@ exp:
 
 %%
 
-type ParseError = String;
 type Expr = String;
 
 #[derive(Clone)]
@@ -153,9 +151,9 @@ impl Parser {
         eprintln!("report_syntax_error: {:#?}", ctx)
     }
 
-    fn make_comparison(&mut self, _: &Loc, lhs: Expr, rhs: Expr) -> Result<Value, ParseError> {
+    fn make_comparison(&mut self, _: &Loc, lhs: Expr, rhs: Expr) -> Result<Value, ()> {
         if lhs != rhs {
-            return Err("comparison failed".to_owned());
+            return Err(());
         }
         Ok(Value::Expr("LHS == RHS".to_owned()))
     }

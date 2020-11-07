@@ -217,9 +217,9 @@ pub struct YYStack {
 impl YYStack {
     pub(crate) fn new() -> Self {
         Self {
-          state_stack: vec![],
-          loc_stack: vec![],
-          value_stack: vec![],
+          state_stack: Vec::with_capacity(20),
+          loc_stack: Vec::with_capacity(20),
+          value_stack: Vec::with_capacity(20),
         }
     }
 
@@ -338,7 +338,7 @@ impl ]b4_parser_struct[ {
         Self::yydefgoto_[idx]
     }
 
-  fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack, yylen: &mut usize) -> Result<i32, ]b4_parse_error_type[> {][
+  fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack, yylen: &mut usize) -> Result<i32, ()> {][
     /* If YYLEN is nonzero, implement the default value of the action:
        '$$ = $1'.  Otherwise, use the top of the stack.
 
