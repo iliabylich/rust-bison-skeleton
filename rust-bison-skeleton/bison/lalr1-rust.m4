@@ -59,6 +59,7 @@ m4_define([b4_define_state],[[
 ]b4_user_pre_prologue[
 ]b4_user_post_prologue[
 use std::convert::TryInto;
+use std::fmt;
 
 ]
 b4_percent_code_get([[use]])[
@@ -114,11 +115,37 @@ impl TokenValue {
     }
 }
 
-#[derive(Debug, Clone)]
+pub fn token_name(id: i32) -> String {
+    let first_token = Lexer::YYerror;
+    if id > first_token + 1 {
+        let pos: usize = (id - first_token + 1)
+            .try_into()
+            .expect("failed to cast token id into usize, is it negative?");
+        Lexer::TOKEN_NAMES[pos].to_owned()
+    } else if id == 0 {
+        "EOF".to_owned()
+    } else {
+        panic!("token_name fails, {} (first token = {})", id, first_token)
+    }
+}
+
+#[derive(Clone)]
 pub struct Token {
     pub token_type: i32,
     pub token_value: TokenValue,
     ]b4_locations_if([pub loc: ]b4_location_type)[
+}
+
+impl fmt::Debug for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&format!(
+            "[{}, {:?}, {}...{}]",
+            token_name(self.token_type),
+            self.token_value,
+            self.loc.begin,
+            self.loc.end
+        ))
+    }
 }
 
 impl Token {
