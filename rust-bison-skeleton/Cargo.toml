@@ -1,6 +1,6 @@
 [package]
 name = "rust-bison-skeleton"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Ilya Bylich <ibylich@gmail.com>"]
 edition = "2018"
 description = "Bison skeleton for Rust"
