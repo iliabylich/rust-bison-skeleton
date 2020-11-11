@@ -64,9 +64,7 @@ use std::fmt;
 ]
 b4_percent_code_get([[use]])[
 
-/**
- * A Bison parser, automatically generated from <tt>]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[</tt>.
- */
+/// A Bison parser, automatically generated from ]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[.
 ][
 #@{derive(Debug)@}
 pub struct ]b4_parser_struct[ {
@@ -100,6 +98,7 @@ pub enum TokenValue {
     InvalidString(Vec<u8>),
 }
 impl TokenValue {
+    /// Converts TokenValue to string, replaces unknown chars to `U+FFFD`
     pub fn to_string_lossy(&self) -> String {
         match &self {
             Self::String(s) => s.clone(),
@@ -107,6 +106,7 @@ impl TokenValue {
         }
     }
 
+    /// Converts TokenValue to a vector of bytes
     pub fn to_bytes(&self) -> Vec<u8> {
         match &self {
             Self::String(s) => s.as_bytes().to_vec(),
@@ -115,6 +115,7 @@ impl TokenValue {
     }
 }
 
+/// Maps token ID into human-readable name
 pub fn token_name(id: i32) -> String {
     let first_token = Lexer::YYerror;
     if id > first_token + 1 {
@@ -129,6 +130,7 @@ pub fn token_name(id: i32) -> String {
     }
 }
 
+/// A token that is emitted by a lexer and consumed by a parser
 #[derive(Clone)]
 pub struct Token {
     pub token_type: i32,
@@ -149,15 +151,18 @@ impl fmt::Debug for Token {
 }
 
 impl Token {
+    /// Converts Token to a string, replaces unknown chars to `U+FFFD`
     pub fn to_string_lossy(&self) -> String {
         self.token_value.to_string_lossy()
     }
 
+    /// Converts Token to a vector of bytes
     pub fn to_bytes(&self) -> Vec<u8> {
         self.token_value.to_bytes()
     }
 }
 
+///
 #[derive(Debug, Clone, PartialEq)]
 pub struct ]b4_location_type[ {
     pub begin: usize,
@@ -165,6 +170,7 @@ pub struct ]b4_location_type[ {
 }
 
 impl ]b4_location_type[ {
+    /// Converts location to a range
     pub fn to_range(&self) -> std::ops::Range<usize> {
         self.begin..self.end
     }
@@ -177,15 +183,10 @@ b4_identification[]
 b4_parse_error_bmatch(
            [detailed\|verbose], [[
 impl ]b4_parser_struct[ {
-    /**
-    * Whether verbose error messages are enabled.
-    */
+    // Whether verbose error messages are enabled.
     pub(crate) fn error_verbose(&self) -> bool { self.yy_error_verbose }
 
-    /**
-    * Set the verbosity of error messages.
-    * @@param verbose True to request verbose error messages.
-    */
+    // Set the verbosity of error messages.
     pub(crate) fn set_error_verbose(&mut self, verbose: bool) {
         self.yy_error_verbose = verbose;
     }
@@ -203,8 +204,6 @@ fn make_yylloc(rhs: &YYStack, n: usize) -> ]b4_location_type[ {
 
 b4_declare_symbol_enum[
 
-// Communication interface between the scanner and the Bison-generated
-// parser <tt>]b4_parser_struct[</tt>.
 impl Lexer {
 ]b4_token_enums[
 
@@ -304,30 +303,22 @@ impl std::fmt::Display for YYStack {
 }
 
 impl ]b4_parser_struct[ {
-  /**
-   * Returned by a Bison action in order to stop the parsing process and
-   * return success (<tt>true</tt>).
-   */
+  /// Returned by a Bison action in order to stop the parsing process and
+  /// return success (true).
   pub(crate) const YYACCEPT: i32 = 0;
 
-  /**
-   * Returned by a Bison action in order to stop the parsing process and
-   * return failure (<tt>false</tt>).
-   */
+  /// Returned by a Bison action in order to stop the parsing process and
+  /// return failure (false).
   pub(crate) const YYABORT: i32 = 1;
 
 ][
 
-  /**
-   * Returned by a Bison action in order to start error recovery without
-   * printing an error message.
-   */
+  /// Returned by a Bison action in order to start error recovery without
+  /// printing an error message.
   pub(crate) const YYERROR: i32 = 2;
 
-  /**
-   * Internal return codes that are not supported for user semantic
-   * actions.
-   */
+  /// Internal return codes that are not supported for user semantic
+  /// actions.
   pub(crate) const YYERRLAB: i32 = 3;
   pub(crate) const YYNEWSTATE: i32 = 4;
   pub(crate) const YYDEFAULT: i32 = 5;
@@ -338,20 +329,17 @@ impl ]b4_parser_struct[ {
 ][
 
 ][
-  /**
-   * Whether error recovery is being done.  In this state, the parser
-   * reads token until it reaches a known state, and then restarts normal
-   * operation.
-   */
+  /// Whether error recovery is being done.  In this state, the parser
+  /// reads token until it reaches a known state, and then restarts normal
+  /// operation.
   #@{allow(dead_code)@}
   pub(crate) fn recovering(&self) -> bool {
       self.yyerrstatus_ == 0
   }
 
-    /** Compute post-reduction state.
-    * @@param yystate   the current state
-    * @@param yysym     the nonterminal to push on the stack
-    */
+    // Compute post-reduction state.
+    // yystate:   the current state
+    // yysym:     the nonterminal to push on the stack
     fn yy_lr_goto_state(&self, yystate: i32, yysym: usize) -> i32 {
         let yysym = usize_to_i32(yysym);
         let idx = i32_to_usize(yysym - Self::YYNTOKENS_);
@@ -419,14 +407,8 @@ impl ]b4_parser_struct[ {
   }]])[
 
 ][
-  /**
-   * Parse input from the scanner that was specified at object construction
-   * time.  Return whether the end of the input was reached successfully.
-   *
-   * @@return <tt>true</tt> if the parsing succeeds.  Note that this does not
-   *          imply that there were no syntax errors.
-   */
-  pub fn parse(&mut self) -> bool][
+   /// Parses given input. Returns true if the parsing was successful.
+   pub fn parse(&mut self) -> bool][
 ][
   {]b4_locations_if([[
     /* @@$.  */
@@ -714,19 +696,14 @@ impl Context {
 
 ][
 
-/**
-  * Whether the given <code>yypact_</code> value indicates a defaulted state.
-  * @@param yyvalue   the value to check
-  */
+/// Whether the given `yypact_` value indicates a defaulted state.
 fn yy_pact_value_is_default(yyvalue: i32) -> bool {
     yyvalue == YYPACT_NINF_
 }
 
-/**
-  * Whether the given <code>yytable_</code>
-  * value indicates a syntax error.
-  * @@param yyvalue the value to check
-  */
+/// Whether the given `yytable_`
+/// value indicates a syntax error.
+/// yyvalue: the value to check
 fn yy_table_value_is_error(yyvalue: i32) -> bool {
     yyvalue == YYTABLE_NINF_
 }
