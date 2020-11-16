@@ -4,20 +4,20 @@ use std::path::Path;
 use std::process::Command;
 
 #[derive(Debug)]
-struct BisonErr {
-    message: String,
-    code: Option<i32>,
+pub struct BisonErr {
+    pub message: String,
+    pub code: Option<i32>,
 }
 
 impl fmt::Display for BisonErr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "BisonErr: {} ({:#?})", self.message, self.code)
+        write!(f, "BisonErr: {:#?} ({:#?})", self.message, self.code)
     }
 }
 
 impl Error for BisonErr {}
 
-pub fn process_bison_file(filepath: &Path) -> Result<(), Box<dyn Error>> {
+pub fn process_bison_file(filepath: &Path) -> Result<(), BisonErr> {
     let input = filepath;
     let output = filepath.with_extension("rs");
 
@@ -57,15 +57,15 @@ pub fn process_bison_file(filepath: &Path) -> Result<(), Box<dyn Error>> {
     ];
     println!("bison args = {:#?}", args);
 
-    let output = Command::new("bison").args(args).output()?;
+    let output = Command::new("bison").args(args).output().unwrap();
 
     if output.status.success() {
         Ok(())
     } else {
         let stderr = String::from_utf8(output.stderr).unwrap();
-        Err(Box::new(BisonErr {
+        Err(BisonErr {
             message: stderr,
             code: output.status.code(),
-        }))
+        })
     }
 }

@@ -67,7 +67,7 @@ b4_percent_code_get([[use]])[
 /// A Bison parser, automatically generated from ]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[.
 ][
 #@{derive(Debug)@}
-pub struct ]b4_parser_struct[ {
+pub struct ]b4_parser_struct[]b4_parser_generic[ {
     pub yylexer: Lexer,
     // true if verbose error messages are enabled.
     #[allow(dead_code)]
@@ -176,13 +176,13 @@ impl ]b4_location_type[ {
     }
 }
 
-impl ]b4_parser_struct[ {]
+impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {]
 b4_identification[]
 [}]
 
 b4_parse_error_bmatch(
            [detailed\|verbose], [[
-impl ]b4_parser_struct[ {
+impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
     // Whether verbose error messages are enabled.
     pub(crate) fn error_verbose(&self) -> bool { self.yy_error_verbose }
 
@@ -217,7 +217,7 @@ impl Lexer {
 }
 ]
 
-[impl ]b4_parser_struct[ {]
+[impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {]
 
 b4_parse_trace_if([[
 ]])[
@@ -302,7 +302,7 @@ impl std::fmt::Display for YYStack {
     }
 }
 
-impl ]b4_parser_struct[ {
+impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
   /// Returned by a Bison action in order to stop the parsing process and
   /// return success (true).
   pub(crate) const YYACCEPT: i32 = 0;
@@ -711,7 +711,7 @@ fn yy_table_value_is_error(yyvalue: i32) -> bool {
 const YYPACT_NINF_: ]b4_int_type_for([b4_pact])[ = ]b4_pact_ninf[;
 const YYTABLE_NINF_: ]b4_int_type_for([b4_table])[ = ]b4_table_ninf[;
 
-impl ]b4_parser_struct[ {
+impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
 ]b4_parser_tables_define[
 

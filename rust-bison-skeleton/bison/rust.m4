@@ -343,6 +343,9 @@ m4_define([b4_location_type], [b4_percent_define_get([[api.location.type]])])
 b4_percent_define_default([[api.position.type]], [Position])
 m4_define([b4_position_type], [b4_percent_define_get([[api.position.type]])])
 
+b4_percent_define_default([[api.parser.generic]], [])
+m4_define([b4_parser_generic], [b4_percent_define_get([[api.parser.generic]])])
+
 
 ## ----------------- ##
 ## Semantic Values.  ##

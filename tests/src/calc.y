@@ -1,6 +1,7 @@
 %expect 0
 
 %define api.parser.struct {Parser}
+%define api.parser.generic {<'a> /*'*/}
 %define api.location.type {Loc}
 %define api.value.type {Value}
 
@@ -14,6 +15,7 @@
 
 %code parser_fields {
   result: Option<String>,
+  pub name: &'a str, /*'*/
 }
 
 %code {
@@ -126,21 +128,22 @@ impl std::fmt::Debug for Value {
     }
 }
 
-impl Parser {
-    pub fn new(lexer: Lexer) -> Self {
+impl<'a> Parser<'a> {
+    pub fn new(lexer: Lexer, name: &'a /*'*/ str) -> Self {
         Self {
             yy_error_verbose: true,
             yynerrs: 0,
             yydebug: false,
             yyerrstatus_: 0,
             yylexer: lexer,
-            result: None
+            result: None,
+            name
         }
     }
 
-    pub fn do_parse(mut self) -> Option<String> {
+    pub fn do_parse(&mut self) -> Option<String> {
         self.parse();
-        self.result
+        self.result.take()
     }
 
     fn next_token(&mut self) -> Token {
