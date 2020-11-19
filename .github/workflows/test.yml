@@ -5,10 +5,7 @@ name: tests
 jobs:
   tests:
     name: run tests
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
+    runs-on: macos-latest
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -23,12 +20,8 @@ jobs:
       - name: install bison
         run: |
           brew install bison
-      - name: add bison to path
-        run: |
-          echo "::add-path::/usr/local/opt/bison/bin"
-      - name: print bison version
-        run: |
+          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
           bison --version
+
       - name: run tests
-        run: |
-          cd tests && cargo test
+        run: cd tests && cargo test
