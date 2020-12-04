@@ -59,7 +59,6 @@ m4_define([b4_define_state],[[
 ]b4_user_pre_prologue[
 ]b4_user_post_prologue[
 use std::convert::TryInto;
-use std::fmt;
 
 ]
 b4_percent_code_get([[use]])[
@@ -92,29 +91,6 @@ fn i32_to_usize(v: i32) -> usize {
     v.try_into().unwrap()
 }
 
-#[derive(Debug, Clone)]
-pub enum TokenValue {
-    String(String),
-    InvalidString(Vec<u8>),
-}
-impl TokenValue {
-    /// Converts TokenValue to string, replaces unknown chars to `U+FFFD`
-    pub fn to_string_lossy(&self) -> String {
-        match &self {
-            Self::String(s) => s.clone(),
-            Self::InvalidString(bytes) => String::from_utf8_lossy(&bytes).into_owned(),
-        }
-    }
-
-    /// Converts TokenValue to a vector of bytes
-    pub fn to_bytes(&self) -> Vec<u8> {
-        match &self {
-            Self::String(s) => s.as_bytes().to_vec(),
-            Self::InvalidString(bytes) => bytes.clone(),
-        }
-    }
-}
-
 /// Maps token ID into human-readable name
 pub fn token_name(id: i32) -> String {
     let first_token = Lexer::YYerror;
@@ -127,38 +103,6 @@ pub fn token_name(id: i32) -> String {
         "EOF".to_owned()
     } else {
         panic!("token_name fails, {} (first token = {})", id, first_token)
-    }
-}
-
-/// A token that is emitted by a lexer and consumed by a parser
-#[derive(Clone)]
-pub struct Token {
-    pub token_type: i32,
-    pub token_value: TokenValue,
-    ]b4_locations_if([pub loc: ]b4_location_type)[
-}
-
-impl fmt::Debug for Token {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&format!(
-            "[{}, {:?}, {}...{}]",
-            token_name(self.token_type),
-            self.token_value,
-            self.loc.begin,
-            self.loc.end
-        ))
-    }
-}
-
-impl Token {
-    /// Converts Token to a string, replaces unknown chars to `U+FFFD`
-    pub fn to_string_lossy(&self) -> String {
-        self.token_value.to_string_lossy()
-    }
-
-    /// Converts Token to a vector of bytes
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.token_value.to_bytes()
     }
 }
 
@@ -262,13 +206,12 @@ impl YYStack {
     }
 
     pub(crate) fn pop_n(&mut self, num: usize) {
-        for _ in 0..num {
-          self.state_stack.pop();
-          ]b4_locations_if([[
-          self.loc_stack.pop();
-          ]])[
-          self.value_stack.pop();
-        }
+        let len = self.state_stack.len() - num;
+        self.state_stack.truncate(len);
+        ]b4_locations_if([[
+        self.loc_stack.truncate(len);
+        ]])[
+        self.value_stack.truncate(len);
     }
 
     pub(crate) fn state_at(&self, i: usize) -> i32 {
@@ -284,7 +227,7 @@ impl YYStack {
         &self.value_stack[self.len() - 1 - i]
     }
 
-    pub(crate) fn owned_value_at(&mut self, i: usize) ->]b4_yystype[ {
+    pub(crate) fn owned_value_at(&mut self, i: usize) -> ]b4_yystype[ {
         let len = self.len();
         std::mem::replace(&mut self.value_stack[len - 1 - i], ]b4_yystype[::Stolen)
     }

@@ -48,7 +48,7 @@
 /* Grammar follows */
 %%
 program:
-  input { self.result = Some($<Expr>1); $$ = Value::None; }
+  input { self.result = Some($<Expr>1.value); $$ = Value::None; }
 ;
 
 input:
@@ -57,49 +57,104 @@ input:
 ;
 
 line:
-  EOL                { $$ = Value::Expr("EOL".to_owned()); }
-| exp EOL            { let exp = $<Expr>1; println!("{:?}", exp); $$ = Value::Expr(exp); }
-| error EOL          { println!("err recovery"); $$ = Value::Expr("Recovered error".to_owned()) }
+  EOL                { $$ = Value::new_expr("EOL".to_owned()); }
+| exp EOL            { let exp = $<Expr>1; println!("{}", exp.value); $$ = Value::Expr(exp); }
+| error EOL          { println!("err recovery"); $$ = Value::new_expr("Recovered error".to_owned()); }
 ;
 
 exp:
-  NUM                { $$ = Value::Expr($<Token>1.to_string_lossy()) }
+  NUM                { $$ = Value::new_expr($<Token>1.to_string_lossy()); }
 | exp "=" exp {
       $$ = self.make_comparison(&@$, $<Expr>1, $<Expr>3)?;
   }
-| exp "+" exp        { $$ = Value::Expr(format!("({} + {})", $<Expr>1, $<Expr>3)); }
-| exp "-" exp        { $$ = Value::Expr(format!("({} - {})", $<Expr>1, $<Expr>3)); }
-| exp "*" exp        { $$ = Value::Expr(format!("({} * {})", $<Expr>1, $<Expr>3)); }
-| exp "/" exp        { $$ = Value::Expr(format!("({}/+ {})", $<Expr>1, $<Expr>3)); }
-| "-" exp  %prec NEG { $$ = Value::Expr(format!("(-{})", $<Expr>2)); }
-| exp "^" exp        { $$ = Value::Expr(format!("({} ^ {})", $<Expr>1, $<Expr>3)); }
-| "(" exp ")"        { $$ = Value::Expr(format!("({})", $<Expr>2)); }
-| "(" error ")"      { $$ = Value::Expr("(err)".to_owned()); }
+| exp "+" exp        { $$ = Value::new_expr(format!("({} + {})", $<Expr>1.value, $<Expr>3.value)); }
+| exp "-" exp        { $$ = Value::new_expr(format!("({} - {})", $<Expr>1.value, $<Expr>3.value)); }
+| exp "*" exp        { $$ = Value::new_expr(format!("({} * {})", $<Expr>1.value, $<Expr>3.value)); }
+| exp "/" exp        { $$ = Value::new_expr(format!("({}/+ {})", $<Expr>1.value, $<Expr>3.value)); }
+| "-" exp  %prec NEG { $$ = Value::new_expr(format!("(-{})", $<Expr>2.value)); }
+| exp "^" exp        { $$ = Value::new_expr(format!("({} ^ {})", $<Expr>1.value, $<Expr>3.value)); }
+| "(" exp ")"        { $$ = Value::new_expr(format!("({})", $<Expr>2.value)); }
+| "(" error ")"      { $$ = Value::new_expr("(err)".to_owned()); }
 | "!"                { return Ok(Self::YYERROR); }
 | "-" error          { return Ok(Self::YYERROR); }
 ;
 
 %%
 
-type Expr = String;
+#[derive(Debug, Clone)]
+pub struct TokenValue {
+    s: String,
+}
+impl TokenValue {
+    /// Converts TokenValue to string, replaces unknown chars to `U+FFFD`
+    pub fn to_string_lossy(&self) -> String {
+        self.s.clone()
+    }
 
+    /// Converts TokenValue to a vector of bytes
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.s.as_bytes().to_vec()
+    }
+}
+
+/// A token that is emitted by a lexer and consumed by a parser
 #[derive(Clone)]
+pub struct Token {
+    pub token_type: i32,
+    pub token_value: TokenValue,
+    pub loc: Loc,
+}
+use std::fmt;
+impl fmt::Debug for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_> /*'*/) -> fmt::Result {
+        f.write_str(&format!(
+            "[{}, {:?}, {}...{}]",
+            token_name(self.token_type),
+            self.token_value,
+            self.loc.begin,
+            self.loc.end
+        ))
+    }
+}
+
+impl Token {
+    /// Converts Token to a string, replaces unknown chars to `U+FFFD`
+    pub fn to_string_lossy(&self) -> String {
+        self.token_value.to_string_lossy()
+    }
+
+    /// Converts Token to a vector of bytes
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.token_value.to_bytes()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Expr {
+    pub value: String
+}
+
+#[derive(Clone, Debug)]
 pub enum Value {
     None,
     Uninitialized,
     Stolen,
-    Token(Token),
-    Expr(Expr)
+    Token(Box<Token>),
+    Expr(Box<Expr>)
 }
 
 impl Value {
     pub fn from_token(value: Token) -> Self {
-        Self::Token(value)
+        Self::Token(Box::new(value))
+    }
+
+    pub fn new_expr(value: String) -> Self {
+        Self::Expr(Box::new(Expr { value }))
     }
 }
 
-impl From<Value> for Token {
-    fn from(value: Value) -> Token {
+impl Token {
+    fn boxed_from(value: Value) -> Box<Token> {
         match value {
             Value::Token(v) => v,
             other => panic!("expected Token, got {:?}", other),
@@ -107,23 +162,11 @@ impl From<Value> for Token {
     }
 }
 
-impl From<Value> for Expr {
-    fn from(value: Value) -> Expr {
+impl Expr {
+    fn boxed_from(value: Value) -> Box<Expr> {
         match value {
             Value::Expr(v) => v,
             other => panic!("expected TokenValue, got {:?}", other),
-        }
-    }
-}
-
-impl std::fmt::Debug for Value {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { //'
-        match self {
-            Value::None => f.write_str("Token::None"),
-            Value::Uninitialized => f.write_str("Token::Uninitialized"),
-            Value::Stolen => f.write_str("Token::Stolen"),
-            Value::Token(token) => f.write_fmt(format_args!("Token::Token({:?})", token)),
-            Value::Expr(expr) => f.write_fmt(format_args!("Token::Expr({})", expr))
         }
     }
 }
@@ -154,11 +197,11 @@ impl<'a> Parser<'a> {
         eprintln!("report_syntax_error: {:#?}", ctx)
     }
 
-    fn make_comparison(&mut self, _: &Loc, lhs: Expr, rhs: Expr) -> Result<Value, ()> {
-        if lhs != rhs {
+    fn make_comparison(&mut self, _: &Loc, lhs: Box<Expr>, rhs: Box<Expr>) -> Result<Value, ()> {
+        if *lhs != *rhs {
             return Err(());
         }
-        Ok(Value::Expr("LHS == RHS".to_owned()))
+        Ok(Value::new_expr("LHS == RHS".to_owned()))
     }
 }
 
@@ -189,7 +232,7 @@ impl Lexer {
             };
             let token = Token {
                 token_type,
-                token_value: TokenValue::String(c.to_string()),
+                token_value: TokenValue { s: c.to_string() },
                 loc: Loc {
                     begin: idx,
                     end: idx + 1,
@@ -200,7 +243,7 @@ impl Lexer {
         tokens.push(
             Token {
                 token_type: Self::YYEOF,
-                token_value: TokenValue::String("".to_owned()),
+                token_value: TokenValue { s: "".to_owned() },
                 loc: Loc { begin: src.len(), end: src.len() + 1 },
             },
         );
