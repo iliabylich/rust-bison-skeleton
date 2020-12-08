@@ -5,7 +5,7 @@ edition = "2018"
 license = "MIT"
 name = "rust-bison-skeleton"
 repository = "https://github.com/iliabylich/rust-bison-skeleton"
-version = "0.9.0"
+version = "0.10.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
