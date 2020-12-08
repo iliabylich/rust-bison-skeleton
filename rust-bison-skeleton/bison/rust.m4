@@ -84,9 +84,7 @@ m4_define([b4_identification],
 # Return the smallest int type able to handle numbers ranging from
 # MIN to MAX (included).
 m4_define([b4_int_type],
-[m4_if(
-       b4_ints_in($@,      [0], [65535]), [1], [usize],
-                                               [i32])])
+[i32])
 
 # b4_int_type_for(NAME)
 # ---------------------
@@ -215,8 +213,8 @@ b4_symbol_foreach([b4_symbol_enum])
         ], b4_symbol_numbers)
     @};
 [
-    pub(crate) fn get(n: usize) -> &'static SymbolKind {
-        &Self::VALUES_[n]
+    pub(crate) fn get(n: i32) -> &'static SymbolKind {
+        &Self::VALUES_[i32_to_usize(n)]
     }
 
     pub(crate) fn code(&self) -> i32 {

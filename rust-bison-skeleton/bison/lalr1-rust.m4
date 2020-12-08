@@ -39,15 +39,14 @@ m4_define([b4_define_state],[[
     let mut yystack = YYStack::new();
     let mut label: i32 = Self::YYNEWSTATE;
 
-]b4_locations_if([[
     /* The location where the error started.  */
-    let mut yyerrloc: ]b4_location_type[ = ]b4_location_type[ { begin: 0, end: 0};
+    let mut yyerrloc: YYLoc = YYLoc { begin: 0, end: 0};
 
     /* Location. */
-    let mut yylloc: ]b4_location_type[ = ]b4_location_type[ { begin: 0, end: 0 };]])[
+    let mut yylloc: YYLoc = YYLoc { begin: 0, end: 0 };
 
     /* Semantic value of the lookahead.  */
-    let mut yylval: ]b4_yystype[ = ]b4_yystype[::Uninitialized;
+    let mut yylval: YYValue = YYValue::Uninitialized;
 ]])[
 
 ]b4_output_begin([b4_parser_file_name])[
@@ -64,7 +63,6 @@ use std::convert::TryInto;
 b4_percent_code_get([[use]])[
 
 /// A Bison parser, automatically generated from ]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[.
-][
 #@{derive(Debug)@}
 pub struct ]b4_parser_struct[]b4_parser_generic[ {
     pub yylexer: Lexer,
@@ -79,11 +77,6 @@ pub struct ]b4_parser_struct[]b4_parser_generic[ {
     yyerrstatus_: i32,
 
     ]b4_percent_code_get([[parser_fields]])[
-}
-
-#[inline]
-fn usize_to_i32(v: usize) -> i32 {
-    v.try_into().unwrap()
 }
 
 #[inline]
@@ -120,36 +113,26 @@ impl ]b4_location_type[ {
     }
 }
 
+/// Local alias
+type YYLoc = ]b4_location_type[;
+
 impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {]
 b4_identification[]
 [}]
 
-b4_parse_error_bmatch(
-           [detailed\|verbose], [[
-impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
-    // Whether verbose error messages are enabled.
-    pub(crate) fn error_verbose(&self) -> bool { self.yy_error_verbose }
-
-    // Set the verbosity of error messages.
-    pub(crate) fn set_error_verbose(&mut self, verbose: bool) {
-        self.yy_error_verbose = verbose;
-    }
-}
-]])
 [
-fn make_yylloc(rhs: &YYStack, n: usize) -> ]b4_location_type[ {
+fn make_yylloc(rhs: &YYStack, n: usize) -> YYLoc {
     if 0 < n {
-        ]b4_location_type[ { begin: rhs.location_at(n - 1).begin, end: rhs.location_at(0).end }
+        YYLoc { begin: rhs.location_at(n - 1).begin, end: rhs.location_at(0).end }
     } else {
-        ]b4_location_type[ { begin: rhs.location_at(0).end, end: rhs.location_at(0).end }
+        YYLoc { begin: rhs.location_at(0).end, end: rhs.location_at(0).end }
     }
 }
-]
 
-b4_declare_symbol_enum[
+]b4_declare_symbol_enum[
 
 impl Lexer {
-]b4_token_enums[
+    ]b4_token_enums[
 
     // Deprecated, use ]b4_symbol(0, id)[ instead.
     #@{allow(dead_code)@}
@@ -157,31 +140,28 @@ impl Lexer {
 
     // Token values
     #@{allow(dead_code)@}
-][pub(crate) const TOKEN_NAMES: &'static [&'static str] = &]b4_token_values[;
+    pub(crate) const TOKEN_NAMES: &'static [&'static str] = &]b4_token_values[;
 }
 ]
 
 [impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {]
 
-b4_parse_trace_if([[
-]])[
-
-]b4_locations_if([[
-  ]])[
-]b4_parse_trace_if([[
-  fn yycdebug(&self, s: &str) {
-    if self.yydebug {
-        eprintln!("{}", s);
-    }
-  }]])[
+    fn yycdebug(&self, s: &str) {
+        if self.yydebug {
+            eprintln!("{}", s);
+        }
+    }[
 
 }
+
+/// Local alias
+type YYValue = ]b4_yystype[;
 
 #[derive(Clone, Debug)]
 pub struct YYStack {
     state_stack: Vec<i32>,
-    loc_stack: Vec<]b4_location_type[>,
-    value_stack: Vec<]b4_yystype[>,
+    loc_stack: Vec<YYLoc>,
+    value_stack: Vec<YYValue>,
 }
 
 impl YYStack {
@@ -193,11 +173,9 @@ impl YYStack {
         }
     }
 
-    pub(crate) fn push(&mut self, state: i32, value: ]b4_yystype[]b4_locations_if([, loc: ]b4_location_type)[) {
+    pub(crate) fn push(&mut self, state: i32, value: YYValue, loc: YYLoc) {
         self.state_stack.push(state);
-        ]b4_locations_if([[
         self.loc_stack.push(loc);
-        ]])[
         self.value_stack.push(value);
     }
 
@@ -208,40 +186,36 @@ impl YYStack {
     pub(crate) fn pop_n(&mut self, num: usize) {
         let len = self.state_stack.len() - num;
         self.state_stack.truncate(len);
-        ]b4_locations_if([[
         self.loc_stack.truncate(len);
-        ]])[
         self.value_stack.truncate(len);
     }
 
     pub(crate) fn state_at(&self, i: usize) -> i32 {
         self.state_stack[self.len() - 1 - i]
     }
-]b4_locations_if([[
 
-    pub(crate) fn location_at(&self, i: usize) -> &]b4_location_type[ {
+    pub(crate) fn location_at(&self, i: usize) -> &YYLoc {
         &self.loc_stack[self.len() - 1 - i]
     }
-]])[
-    pub(crate) fn borrow_value_at(&self, i: usize) -> &]b4_yystype[ {
+
+    pub(crate) fn borrow_value_at(&self, i: usize) -> &YYValue {
         &self.value_stack[self.len() - 1 - i]
     }
 
-    pub(crate) fn owned_value_at(&mut self, i: usize) -> ]b4_yystype[ {
+    pub(crate) fn owned_value_at(&mut self, i: usize) -> YYValue {
         let len = self.len();
-        std::mem::replace(&mut self.value_stack[len - 1 - i], ]b4_yystype[::Stolen)
+        std::mem::replace(&mut self.value_stack[len - 1 - i], YYValue::Stolen)
     }
 
     pub(crate) fn len(&self) -> usize {
       self.state_stack.len()
     }
-
 }
 
 impl std::fmt::Display for YYStack {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let state = self.state_stack.iter().map(|e| e.to_string()).collect::<Vec<String>>().join(" ");
-        f.write_fmt(format_args!("Stack now {}", state))
+        f.write_fmt(format_args!("Stack now states = {} / values = {:?} ", state, self.value_stack))
     }
 }
 
@@ -253,8 +227,6 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
   /// Returned by a Bison action in order to stop the parsing process and
   /// return failure (false).
   pub(crate) const YYABORT: i32 = 1;
-
-][
 
   /// Returned by a Bison action in order to start error recovery without
   /// printing an error message.
@@ -269,9 +241,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
   pub(crate) const YYERRLAB1: i32 = 7;
   #@{allow(dead_code)@}
   pub(crate) const YYRETURN: i32 = 8;
-][
 
-][
   /// Whether error recovery is being done.  In this state, the parser
   /// reads token until it reaches a known state, and then restarts normal
   /// operation.
@@ -283,8 +253,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
     // Compute post-reduction state.
     // yystate:   the current state
     // yysym:     the nonterminal to push on the stack
-    fn yy_lr_goto_state(&self, yystate: i32, yysym: usize) -> i32 {
-        let yysym = usize_to_i32(yysym);
+    fn yy_lr_goto_state(&self, yystate: i32, yysym: i32) -> i32 {
         let idx = i32_to_usize(yysym - Self::YYNTOKENS_);
         let yyr = Self::yypgoto_[idx] + yystate;
         if 0 <= yyr && yyr <= Self::YYLAST_ {
@@ -296,333 +265,291 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         Self::yydefgoto_[idx]
     }
 
-  fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack, yylen: &mut usize) -> Result<i32, ()> {][
-    /* If YYLEN is nonzero, implement the default value of the action:
-       '$$ = $1'.  Otherwise, use the top of the stack.
+    fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack, yylen: &mut usize) -> Result<i32, ()> {
+        // If YYLEN is nonzero, implement the default value of the action:
+        // '$$ = $1'.  Otherwise, use the top of the stack.
+        //
+        // Otherwise, the following line sets YYVAL to garbage.
+        // This behavior is undocumented and Bison
+        // users should not rely upon it.
+        #@{allow(unused_assignments)@}
+        let mut yyval: YYValue = YYValue::Uninitialized;
+        let yyloc: YYLoc = make_yylloc(&yystack, *yylen);
 
-       Otherwise, the following line sets YYVAL to garbage.
-       This behavior is undocumented and Bison
-       users should not rely upon it.  */
-    #@{allow(unused_assignments)@}
-    let mut yyval: ]b4_yystype[ = ]b4_yystype[::Uninitialized;
-    ]b4_locations_if([[
-    let yyloc: ]b4_location_type[ = make_yylloc(&yystack, *yylen);]])[]b4_parse_trace_if([[
+        self.yy_reduce_print(yyn, yystack);
 
-    self.yy_reduce_print(yyn, yystack);]])[
+        match yyn {
+            ]b4_user_actions[
+            _ => {}
+        }
 
-    match yyn {
-        ]b4_user_actions[
-        _ => {}
-    }]b4_parse_trace_if([[
+        if let YYValue::Uninitialized = yyval {
+            panic!("yyval is Uninitialized in rule at line {}", Self::yyrline_[i32_to_usize(yyn)]);
+        }
 
-    if let ]b4_yystype[::Uninitialized = yyval {
-        panic!("yyval is Uninitialized in rule at line {}", Self::yyrline_[i32_to_usize(yyn)]);
+        self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[i32_to_usize(yyn)]), &yyval, &yyloc);
+
+        yystack.pop_n(*yylen);
+        *yylen = 0;
+        /* Shift the result of the reduction.  */
+        let yystate = self.yy_lr_goto_state(yystack.state_at(0), Self::yyr1_[i32_to_usize(yyn)]);
+        yystack.push(yystate, yyval, yyloc);
+        Ok(Self::YYNEWSTATE)
     }
 
-    self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[i32_to_usize(yyn)]), &yyval]b4_locations_if([, &yyloc])[);]])[
-
-    yystack.pop_n(*yylen);
-    *yylen = 0;
-    /* Shift the result of the reduction.  */
-    let yystate = self.yy_lr_goto_state(yystack.state_at(0), Self::yyr1_[i32_to_usize(yyn)]);
-    yystack.push(yystate, yyval]b4_locations_if([, yyloc])[);
-    Ok(Self::YYNEWSTATE)
-  }
-
-]b4_parse_trace_if([[
-  /*--------------------------------.
-  | Print this symbol on YYOUTPUT.  |
-  `--------------------------------*/
-
-  fn yy_symbol_print(&self, s: &str, yykind: &SymbolKind,
-                             yyvalue: &]b4_yystype[]b4_locations_if([, yylocation: &]b4_location_type[])[) {
-      if self.yydebug {
-          self.yycdebug(
-            &format!("{}{} {:?} ( {:?}: {:?} )",
-              s,
-              if yykind.code() < Self::YYNTOKENS_ { " token " } else { " nterm " },
-              yykind.name(),
-              ]b4_locations_if([yylocation,])[
-              yyvalue
+    // Print this symbol on YYOUTPUT.
+    fn yy_symbol_print(&self, s: &str, yykind: &SymbolKind, yyvalue: &YYValue, yylocation: &YYLoc) {
+        if self.yydebug {
+            self.yycdebug(
+                &format!("{}{} {:?} ( {:?}: {:?} )", // " fix highlighting
+                s,
+                if yykind.code() < Self::YYNTOKENS_ { " token " } else { " nterm " },
+                yykind.name(),
+                yylocation,
+                yyvalue
+                )
             )
-          )
-      }
-  }]])[
-
-][
-   /// Parses given input. Returns true if the parsing was successful.
-   pub fn parse(&mut self) -> bool][
-][
-  {]b4_locations_if([[
-    /* @@$.  */
-    let mut yyloc: ]b4_location_type[;]])[
-][
-]b4_define_state[]b4_parse_trace_if([[
-    self.yycdebug("Starting parse");]])[
-    self.yyerrstatus_ = 0;
-    self.yynerrs = 0;
-
-    /* Initialize the stack.  */
-    yystack.push(yystate, yylval.clone()]b4_locations_if([, yylloc.clone()])[);
-]m4_ifdef([b4_initial_action], [
-b4_dollar_pushdef([yylval], [], [], [yylloc])dnl
-    b4_user_initial_action
-b4_dollar_popdef[]dnl
-])[
-][
-][
-    loop {
-      match label {
-        /* New state.  Unlike in the C/C++ skeletons, the state is already
-           pushed when we come here.  */
-
-      Self::YYNEWSTATE => {]b4_parse_trace_if([[
-        self.yycdebug(&format!("Entering state {}", yystate));
-        if self.yydebug { eprintln!("{}", yystack) }]])[
-
-        /* Accept? */
-        if yystate == Self::YYFINAL_ {
-          return true;
         }
+    }
 
-        /* Take a decision.  First try without lookahead.  */
-        yyn = Self::yypact_[i32_to_usize(yystate)];
-        if yy_pact_value_is_default(yyn) {
-          label = Self::YYDEFAULT;
-          continue;
-        }
+    /// Parses given input. Returns true if the parsing was successful.
+    pub fn parse(&mut self) -> bool {
+        /* @@$.  */
+        let mut yyloc: YYLoc;
+        ]b4_define_state[
+        self.yycdebug("Starting parse");
+        self.yyerrstatus_ = 0;
+        self.yynerrs = 0;
 
-        /* Read a lookahead token.  */
-        if yychar == Self::YYEMPTY_ {
-]b4_parse_trace_if([[
-            self.yycdebug("Reading a token");]])[
-            let token = self.next_token();
-            yychar = token.token_type;]b4_locations_if([[
-            yylloc = token.loc.clone();]])[
-            yylval = ]b4_yystype[::from_token(token);
-][
-          }
+        /* Initialize the stack.  */
+        yystack.push(yystate, yylval.clone(), yylloc.clone());
 
-        /* Convert token to internal form.  */
-        yytoken = Self::yytranslate_(yychar);]b4_parse_trace_if([[
-        self.yy_symbol_print("Next token is", &yytoken,
-                      &yylval]b4_locations_if([, &yylloc])[);]])[
-
-        if yytoken == (]b4_symbol(1, kind)[) {
-            // The scanner already issued an error message, process directly
-            // to error recovery.  But do not keep the error token as
-            // lookahead, it is too special and may lead us to an endless
-            // loop in error recovery. */
-            yychar = Lexer::]b4_symbol(2, id)[;
-            yytoken = ]b4_symbol(2, kind)[;]b4_locations_if([[
-            yyerrloc = yylloc.clone();]])[
-            label = Self::YYERRLAB1;
-        } else {
-            /* If the proper action on seeing token YYTOKEN is to reduce or to
-               detect an error, take that action.  */
-            yyn += yytoken.code();
-            if yyn < 0 || Self::YYLAST_ < yyn || Self::yycheck_[i32_to_usize(yyn)] != yytoken.code() {
-              label = Self::YYDEFAULT;
-            }
-
-            /* <= 0 means reduce or error.  */
-            else {
-              yyn = Self::yytable_[i32_to_usize(yyn)];
-              if yyn <= 0 {
-                if yy_table_value_is_error(yyn) {
-                  label = Self::YYERRLAB;
-                } else {
-                  yyn = -yyn;
-                  label = Self::YYREDUCE;
-                }
-              } else {
-                /* Shift the lookahead token.  */]b4_parse_trace_if([[
-                self.yy_symbol_print("Shifting", &yytoken,
-                              &yylval]b4_locations_if([, &yylloc])[);
-]])[
-                /* Discard the token being shifted.  */
-                yychar = Self::YYEMPTY_;
-
-                /* Count tokens shifted since error; after three, turn off error
-                   status.  */
-                if self.yyerrstatus_ > 0 {
-                  self.yyerrstatus_ -= 1;
-                }
-
-                yystate = yyn;
-                yystack.push(yystate, yylval.clone()]b4_locations_if([, yylloc.clone()])[);
-                label = Self::YYNEWSTATE;
-              }
-            }
-          }
-        continue;
-      }, // YYNEWSTATE
-][
-
-
-      /*-----------------------------------------------------------.
-      | yydefault -- do the default action for the current state.  |
-      `-----------------------------------------------------------*/
-      Self::YYDEFAULT => {
-        yyn = usize_to_i32(Self::yydefact_[i32_to_usize(yystate)]);
-        if yyn == 0 {
-          label = Self::YYERRLAB;
-        } else {
-          label = Self::YYREDUCE;
-        }
-        continue;
-      } // YYDEFAULT
-
-      /*-----------------------------.
-      | yyreduce -- Do a reduction.  |
-      `-----------------------------*/
-      Self::YYREDUCE => {
-        yylen = Self::yyr2_[i32_to_usize(yyn)];
-        label = match self.yyaction(yyn, &mut yystack, &mut yylen) {
-            Ok(label) => label,
-            Err(_) => Self::YYERROR
-        };
-        yystate = yystack.state_at(0);
-        continue;
-      }, // YYREDUCE
-
-      /*------------------------------------.
-      | yyerrlab -- here on detecting error |
-      `------------------------------------*/
-      Self::YYERRLAB => {
-        /* If not already recovering from an error, report this error.  */
-        if self.yyerrstatus_ == 0 {
-            self.yynerrs += 1;
-            if yychar == Self::YYEMPTY_ {
-              yytoken = SymbolKind { value: 0 };
-            }
-            self.report_syntax_error(&Context::new(yystack.clone(), yytoken.clone()]b4_locations_if([[, yylloc.clone()]])[));
-          }
-]b4_locations_if([[
-        yyerrloc = yylloc.clone();]])[
-        if self.yyerrstatus_ == 3 {
-            /* If just tried and failed to reuse lookahead token after an
-               error, discard it.  */
-
-            if yychar <= Lexer::]b4_symbol(0, id)[ {
-                /* Return failure if at end of input.  */
-                if yychar == Lexer::]b4_symbol(0, id)[ {
-                  return false;
-                }
-              }
-            else {
-              yychar = Self::YYEMPTY_;
-            }
-          }
-
-        /* Else will try to reuse lookahead token after shifting the error
-           token.  */
-        label = Self::YYERRLAB1;
-        continue;
-      }, // YYERRLAB
-
-      /*-------------------------------------------------.
-      | errorlab -- error raised explicitly by YYERROR.  |
-      `-------------------------------------------------*/
-      Self::YYERROR => {
-        /* Do not reclaim the symbols of the rule which action triggered
-           this YYERROR.  */
-        yystack.pop_n(yylen);
-        yylen = 0;
-        yystate = yystack.state_at(0);
-        label = Self::YYERRLAB1;
-        continue;
-      }, // YYERROR
-
-      /*-------------------------------------------------------------.
-      | yyerrlab1 -- common code for both syntax error and YYERROR.  |
-      `-------------------------------------------------------------*/
-      Self::YYERRLAB1 => {
-        self.yyerrstatus_ = 3;       /* Each real token shifted decrements this.  */
-
-        // Pop stack until we find a state that shifts the error token.
         loop {
-            yyn = Self::yypact_[i32_to_usize(yystate)];
-            if !yy_pact_value_is_default(yyn) {
-                yyn += SymbolKind { value: SymbolKind::S_YYerror }.code();
-                if 0 <= yyn && yyn <= Self::YYLAST_ {
-                  let yyn_usize = i32_to_usize(yyn);
-                  if Self::yycheck_[yyn_usize] == SymbolKind::S_YYerror {
-                    yyn = Self::yytable_[yyn_usize];
-                    if 0 < yyn {
-                      break;
+            match label {
+                // New state.  Unlike in the C/C++ skeletons, the state is already
+                // pushed when we come here.
+
+                Self::YYNEWSTATE => {
+                    self.yycdebug(&format!("Entering state {}", yystate));
+                    if self.yydebug { eprintln!("{}", yystack) }
+
+                    /* Accept? */
+                    if yystate == Self::YYFINAL_ {
+                        return true;
                     }
-                  }
+
+                    /* Take a decision.  First try without lookahead.  */
+                    yyn = Self::yypact_[i32_to_usize(yystate)];
+                    if yy_pact_value_is_default(yyn) {
+                        label = Self::YYDEFAULT;
+                        continue;
+                    }
+
+                    /* Read a lookahead token.  */
+                    if yychar == Self::YYEMPTY_ {
+                        self.yycdebug("Reading a token");
+                        let token = self.next_token();
+                        yychar = token.token_type;
+                        yylloc = token.loc.clone();
+                        yylval = YYValue::from_token(token);
+                    }
+
+                    /* Convert token to internal form.  */
+                    yytoken = Self::yytranslate_(yychar);
+                    self.yy_symbol_print("Next token is", &yytoken, &yylval, &yylloc);
+
+                    if yytoken == (]b4_symbol(1, kind)[) {
+                        // The scanner already issued an error message, process directly
+                        // to error recovery.  But do not keep the error token as
+                        // lookahead, it is too special and may lead us to an endless
+                        // loop in error recovery. */
+                        yychar = Lexer::]b4_symbol(2, id)[;
+                        yytoken = ]b4_symbol(2, kind)[;]
+                        yyerrloc = yylloc.clone();[
+                        label = Self::YYERRLAB1;
+                    } else {
+                        // If the proper action on seeing token YYTOKEN is to reduce or to
+                        // detect an error, take that action.
+                        yyn += yytoken.code();
+                        if yyn < 0 || Self::YYLAST_ < yyn || Self::yycheck_[i32_to_usize(yyn)] != yytoken.code() {
+                            label = Self::YYDEFAULT;
+                        }
+
+                        /* <= 0 means reduce or error.  */
+                        else {
+                            yyn = Self::yytable_[i32_to_usize(yyn)];
+                            if yyn <= 0 {
+                                if yy_table_value_is_error(yyn) {
+                                    label = Self::YYERRLAB;
+                                } else {
+                                    yyn = -yyn;
+                                    label = Self::YYREDUCE;
+                                }
+                            } else {
+                                /* Shift the lookahead token.  */
+                                self.yy_symbol_print("Shifting", &yytoken, &yylval, &yylloc);
+
+                                /* Discard the token being shifted.  */
+                                yychar = Self::YYEMPTY_;
+
+                                /* Count tokens shifted since error; after three, turn off error status.  */
+                                if self.yyerrstatus_ > 0 {
+                                    self.yyerrstatus_ -= 1;
+                                }
+
+                                yystate = yyn;
+                                yystack.push(yystate, yylval.clone(), yylloc.clone());
+                                label = Self::YYNEWSTATE;
+                            }
+                        }
+                    }
+                    continue;
+                }, // YYNEWSTATE
+
+                // yydefault -- do the default action for the current state.
+                Self::YYDEFAULT => {
+                    yyn = Self::yydefact_[i32_to_usize(yystate)];
+                    if yyn == 0 {
+                        label = Self::YYERRLAB;
+                    } else {
+                        label = Self::YYREDUCE;
+                    }
+                    continue;
+                } // YYDEFAULT
+
+                // yyreduce -- Do a reduction.
+                Self::YYREDUCE => {
+                    yylen = i32_to_usize(Self::yyr2_[i32_to_usize(yyn)]);
+                    label = match self.yyaction(yyn, &mut yystack, &mut yylen) {
+                        Ok(label) => label,
+                        Err(_) => Self::YYERROR
+                    };
+                    yystate = yystack.state_at(0);
+                    continue;
+                }, // YYREDUCE
+
+                // yyerrlab -- here on detecting error
+                Self::YYERRLAB => {
+                    /* If not already recovering from an error, report this error.  */
+                    if self.yyerrstatus_ == 0 {
+                        self.yynerrs += 1;
+                        if yychar == Self::YYEMPTY_ {
+                            yytoken = SymbolKind { value: 0 };
+                        }
+                        self.report_syntax_error(&Context::new(yystack.clone(), yytoken.clone(), yylloc.clone()));
+                    }
+                    yyerrloc = yylloc.clone();
+                    if self.yyerrstatus_ == 3 {
+                        // If just tried and failed to reuse lookahead token after an error, discard it.
+
+                        if yychar <= Lexer::]b4_symbol(0, id)[ {
+                            /* Return failure if at end of input.  */
+                            if yychar == Lexer::]b4_symbol(0, id)[ {
+                                return false;
+                            }
+                        }
+                        else {
+                            yychar = Self::YYEMPTY_;
+                        }
+                    }
+
+                    // Else will try to reuse lookahead token after shifting the error token.
+                    label = Self::YYERRLAB1;
+                    continue;
+                }, // YYERRLAB
+
+                // errorlab -- error raised explicitly by YYERROR.
+                Self::YYERROR => {
+                    /* Do not reclaim the symbols of the rule which action triggered
+                    this YYERROR.  */
+                    yystack.pop_n(yylen);
+                    yylen = 0;
+                    yystate = yystack.state_at(0);
+                    label = Self::YYERRLAB1;
+                    continue;
+                }, // YYERROR
+
+                // yyerrlab1 -- common code for both syntax error and YYERROR.
+                Self::YYERRLAB1 => {
+                    self.yyerrstatus_ = 3;       /* Each real token shifted decrements this.  */
+
+                    // Pop stack until we find a state that shifts the error token.
+                    println!("pop stack until we find");
+                    loop {
+                        yyn = Self::yypact_[i32_to_usize(yystate)];
+                        if !yy_pact_value_is_default(yyn) {
+                            yyn += SymbolKind { value: SymbolKind::S_YYerror }.code();
+                            if 0 <= yyn && yyn <= Self::YYLAST_ {
+                                let yyn_usize = i32_to_usize(yyn);
+                                if Self::yycheck_[yyn_usize] == SymbolKind::S_YYerror {
+                                    yyn = Self::yytable_[yyn_usize];
+                                    if 0 < yyn {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        // Pop the current state because it cannot handle the error token.
+                        if yystack.len() == 1 {
+                            return false;
+                        }
+
+                        yyerrloc = yystack.location_at(0).clone();
+                        yystack.pop();
+                        yystate = yystack.state_at(0);
+                        if self.yydebug {
+                            eprintln!("{}", yystack);
+                        }
+                    }
+
+                    if label == Self::YYABORT {
+                        /* Leave the switch.  */
+                        continue;
+                    }
+
+                    /* Muck with the stack to setup for yylloc.  */
+                    yystack.push(0, YYValue::Uninitialized, yylloc.clone());
+                    yystack.push(0, YYValue::Uninitialized, yyerrloc.clone());
+                    yyloc = make_yylloc(&yystack, 2);
+                    yystack.pop_n(2);
+
+                    /* Shift the error token.  */
+                    self.yy_symbol_print("Shifting", SymbolKind::get(Self::yystos_[i32_to_usize(yyn)]), &yylval, &yyloc);
+
+                    yystate = yyn;
+                    yystack.push(yyn, yylval.clone(), yyloc.clone());
+                    label = Self::YYNEWSTATE;
+                    continue;
+                }, // YYERRLAB1
+
+                // Accept
+                Self::YYACCEPT => {
+                    return true;
+                }
+
+                // Abort.
+                Self::YYABORT => {
+                    return false;
+                },
+
+                _ => {
+                    panic!("internal bison error: unknown label {}", label);
                 }
             }
-
-            /* Pop the current state because it cannot handle the
-             * error token.  */
-            if yystack.len() == 1 {
-              return false;
-            }
-
-]b4_locations_if([[
-            yyerrloc = yystack.location_at(0).clone();]])[
-            yystack.pop();
-            yystate = yystack.state_at(0);]b4_parse_trace_if([[
-            if self.yydebug {
-              eprintln!("{}", yystack);]])[
-            }
-          }
-
-        if label == Self::YYABORT {
-          /* Leave the switch.  */
-          continue;
         }
-
-]b4_locations_if([[
-        /* Muck with the stack to setup for yylloc.  */
-        yystack.push(0, ]b4_yystype[::Uninitialized, yylloc.clone());
-        yystack.push(0, ]b4_yystype[::Uninitialized, yyerrloc.clone());
-        yyloc = make_yylloc(&yystack, 2);
-        yystack.pop_n(2);]])[
-
-        /* Shift the error token.  */]b4_parse_trace_if([[
-        self.yy_symbol_print("Shifting", SymbolKind::get(Self::yystos_[i32_to_usize(yyn)]),
-                      &yylval]b4_locations_if([, &yyloc])[);]])[
-
-        yystate = yyn;
-        yystack.push(yyn, yylval.clone()]b4_locations_if([, yyloc.clone()])[);
-        label = Self::YYNEWSTATE;
-        continue;
-      }, // YYERRLAB1
-
-        /* Accept.  */
-      Self::YYACCEPT => {
-        ][
-      }, // YYACCEPT
-
-        /* Abort.  */
-      Self::YYABORT => {
-        ][
-      }, // YYABORT
-
-      _ => {
-        panic!("internal bison error: unknown label {}", label);
-      }
-      }
     }
 }
-}
-][
-
-][
 
 #@{derive(Debug)@}
 pub(crate) struct Context {
     yystack: YYStack,
     yytoken: SymbolKind,
-    loc: ]b4_location_type[
+    loc: YYLoc
 }
 
 impl Context {
-    pub(crate) fn new(stack: YYStack, token: SymbolKind, loc: ]b4_location_type[) -> Self {
+    pub(crate) fn new(stack: YYStack, token: SymbolKind, loc: YYLoc) -> Self {
         Self { yystack: stack, yytoken: token, loc }
     }
 
@@ -632,21 +559,19 @@ impl Context {
     }
 
     #@{allow(dead_code)@}
-    pub(crate) fn location(&self) -> &]b4_location_type[ {
+    pub(crate) fn location(&self) -> &YYLoc {
         &self.loc
     }
 }
 
-][
-
-/// Whether the given `yypact_` value indicates a defaulted state.
+// Whether the given `yypact_` value indicates a defaulted state.
 fn yy_pact_value_is_default(yyvalue: i32) -> bool {
     yyvalue == YYPACT_NINF_
 }
 
-/// Whether the given `yytable_`
-/// value indicates a syntax error.
-/// yyvalue: the value to check
+// Whether the given `yytable_`
+// value indicates a syntax error.
+// yyvalue: the value to check
 fn yy_table_value_is_error(yyvalue: i32) -> bool {
     yyvalue == YYTABLE_NINF_
 }
@@ -658,32 +583,32 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
 ]b4_parser_tables_define[
 
-]b4_parse_trace_if([[
-  ]b4_integral_parser_table_define([rline], [b4_rline],
+]b4_integral_parser_table_define([rline], [b4_rline],
   [[YYRLINE[YYN] -- Source line where rule number YYN was defined.]])[
 
-
+][
   // Report on the debug stream that the rule yyrule is going to be reduced.
   fn yy_reduce_print(&self, yyrule: i32, yystack: &YYStack) {
-    if !self.yydebug {
-      return;
-    }
+        if !self.yydebug {
+            return;
+        }
 
-    let yylno = Self::yyrline_[i32_to_usize(yyrule)];
-    let yynrhs = Self::yyr2_[i32_to_usize(yyrule)];
-    /* Print the symbols being reduced, and their result.  */
-    self.yycdebug(&format!("Reducing stack by rule {} (line {}):", yyrule - 1,
-              yylno));
+        let yylno = Self::yyrline_[i32_to_usize(yyrule)];
+        let yynrhs = Self::yyr2_[i32_to_usize(yyrule)];
+        // Print the symbols being reduced, and their result.
+        self.yycdebug(&format!("Reducing stack by rule {} (line {}):", /* " fix */ yyrule - 1, yylno));
 
-    /* The symbols being reduced.  */
-    for yyi in 0..yynrhs {
-      let state: usize = i32_to_usize(yystack.state_at(yynrhs - (yyi + 1)));
-      self.yy_symbol_print(&format!("   ${} =", yyi + 1),
-                    SymbolKind::get(Self::yystos_[state]),
-                    yystack.borrow_value_at(yynrhs - (yyi + 1))]b4_locations_if([,
-                    yystack.location_at(yynrhs - (yyi + 1))])[);
-    }
-  }]])[
+        // The symbols being reduced.
+        for yyi in 0..yynrhs {
+            let state: usize = i32_to_usize(yystack.state_at(i32_to_usize(yynrhs - (yyi + 1))));
+            self.yy_symbol_print(
+                &format!("   ${} =", yyi + 1),
+                SymbolKind::get(Self::yystos_[state]),
+                yystack.borrow_value_at(i32_to_usize(yynrhs - (yyi + 1))),
+                yystack.location_at(i32_to_usize(yynrhs - (yyi + 1)))
+            );
+        }
+  }][
 
   /* YYTRANSLATE_(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
      as returned by yylex, with out-of-bounds checking.  */
@@ -694,16 +619,16 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
   }
 ]],
 [[  {
-    // Last valid token kind.
-    let code_max: i32 = ]b4_code_max[;
-      if t <= 0 {
-          ]b4_symbol(0, kind)[
-      } else if t <= code_max {
-        let t = i32_to_usize(t);
-          SymbolKind::get(Self::yytranslate_table_[t]).clone()
-      } else {
-          ]b4_symbol(2, kind)[
-      }
+        // Last valid token kind.
+        let code_max: i32 = ]b4_code_max[;
+        if t <= 0 {
+            ]b4_symbol(0, kind)[
+        } else if t <= code_max {
+            let t = i32_to_usize(t);
+            SymbolKind::get(Self::yytranslate_table_[t]).clone()
+        } else {
+            ]b4_symbol(2, kind)[
+        }
   }
   ]b4_integral_parser_table_define([translate_table], [b4_translate])[
 ]])[
@@ -712,6 +637,8 @@ const YYLAST_: i32 = ]b4_last[;
 const YYEMPTY_: i32 = -2;
 const YYFINAL_: i32 = ]b4_final_state_number[;
 const YYNTOKENS_: i32 = ]b4_tokens_number[;
+]b4_locations_if([])[
+]b4_parse_trace_if([])[
 }
 
 ]b4_percent_code_get[

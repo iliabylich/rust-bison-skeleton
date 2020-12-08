@@ -1,6 +1,11 @@
 mod calc;
-pub use calc::Lexer as CalcLexer;
-pub use calc::Loc as CalcLoc;
-pub use calc::Parser as CalcParser;
-pub use calc::Token as CalcToken;
-pub use calc::TokenValue as CalcTokenValue;
+mod lexer;
+mod token;
+mod value;
+
+pub use calc::{token_name, Loc, Parser};
+pub use lexer::Lexer;
+pub use token::{Token, TokenValue};
+pub use value::Value;
+
+pub(crate) use value::{Number, Numbers};
