@@ -474,7 +474,6 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     self.yyerrstatus_ = 3;       /* Each real token shifted decrements this.  */
 
                     // Pop stack until we find a state that shifts the error token.
-                    println!("pop stack until we find");
                     loop {
                         yyn = Self::yypact_[i32_to_usize(yystate)];
                         if !yy_pact_value_is_default(yyn) {
