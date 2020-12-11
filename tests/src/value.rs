@@ -10,6 +10,12 @@ pub enum Value {
     Numbers(Vec<i32>),
 }
 
+impl Default for Value {
+    fn default() -> Self {
+        Self::Stolen
+    }
+}
+
 impl Value {
     pub fn from_token(value: Token) -> Self {
         Self::Token(Box::new(value))

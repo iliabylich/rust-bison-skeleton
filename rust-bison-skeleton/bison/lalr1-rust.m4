@@ -30,7 +30,7 @@ m4_define([b4_define_state],[[
     /* Lookahead token kind.  */
     let mut yychar: i32 = Self::YYEMPTY_;
     /* Lookahead symbol kind.  */
-    let mut yytoken: SymbolKind = SymbolKind { value: 0 };
+    let mut yytoken = &DYMMY_SYMBOL_KIND;
 
     /* State.  */
     let mut yyn: i32 = 0;
@@ -106,15 +106,21 @@ pub struct ]b4_location_type[ {
     pub end: usize,
 }
 
-impl ]b4_location_type[ {
+/// Local alias
+type YYLoc = ]b4_location_type[;
+
+impl YYLoc {
     /// Converts location to a range
     pub fn to_range(&self) -> std::ops::Range<usize> {
         self.begin..self.end
     }
 }
 
-/// Local alias
-type YYLoc = ]b4_location_type[;
+impl Default for YYLoc {
+    fn default() -> Self {
+        Self { begin: 0, end: 0 }
+    }
+}
 
 impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {]
 b4_identification[]
@@ -130,6 +136,8 @@ fn make_yylloc(rhs: &YYStack, n: usize) -> YYLoc {
 }
 
 ]b4_declare_symbol_enum[
+
+const DYMMY_SYMBOL_KIND: SymbolKind = SymbolKind { value: 0 };
 
 impl Lexer {
     ]b4_token_enums[
@@ -204,7 +212,7 @@ impl YYStack {
 
     pub(crate) fn owned_value_at(&mut self, i: usize) -> YYValue {
         let len = self.len();
-        std::mem::replace(&mut self.value_stack[len - 1 - i], YYValue::Stolen)
+        std::mem::take(&mut self.value_stack[len - 1 - i])
     }
 
     pub(crate) fn len(&self) -> usize {
@@ -330,8 +338,10 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                 // pushed when we come here.
 
                 Self::YYNEWSTATE => {
-                    self.yycdebug(&format!("Entering state {}", yystate));
-                    if self.yydebug { eprintln!("{}", yystack) }
+                    if self.yydebug {
+                        self.yycdebug(&format!("Entering state {}", yystate));
+                        eprintln!("{}", yystack);
+                    }
 
                     /* Accept? */
                     if yystate == Self::YYFINAL_ {
@@ -358,14 +368,14 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     yytoken = Self::yytranslate_(yychar);
                     self.yy_symbol_print("Next token is", &yytoken, &yylval, &yylloc);
 
-                    if yytoken == (]b4_symbol(1, kind)[) {
+                    if yytoken == SymbolKind::get(1) {
                         // The scanner already issued an error message, process directly
                         // to error recovery.  But do not keep the error token as
                         // lookahead, it is too special and may lead us to an endless
                         // loop in error recovery. */
                         yychar = Lexer::]b4_symbol(2, id)[;
-                        yytoken = ]b4_symbol(2, kind)[;]
-                        yyerrloc = yylloc.clone();[
+                        yytoken = SymbolKind::get(2);
+                        yyerrloc = yylloc.clone();
                         label = Self::YYERRLAB1;
                     } else {
                         // If the proper action on seeing token YYTOKEN is to reduce or to
@@ -398,7 +408,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                                 }
 
                                 yystate = yyn;
-                                yystack.push(yystate, yylval.clone(), yylloc.clone());
+                                yystack.push(yystate, std::mem::take(&mut yylval), std::mem::take(&mut yylloc));
                                 label = Self::YYNEWSTATE;
                             }
                         }
@@ -434,7 +444,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     if self.yyerrstatus_ == 0 {
                         self.yynerrs += 1;
                         if yychar == Self::YYEMPTY_ {
-                            yytoken = SymbolKind { value: 0 };
+                            yytoken = &DYMMY_SYMBOL_KIND;
                         }
                         self.report_syntax_error(&Context::new(yystack.clone(), yytoken.clone(), yylloc.clone()));
                     }
@@ -611,7 +621,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
   /* YYTRANSLATE_(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
      as returned by yylex, with out-of-bounds checking.  */
-  fn yytranslate_(t: i32) -> SymbolKind
+  fn yytranslate_(t: i32) -> &'static SymbolKind
 ]b4_api_token_raw_if(dnl
 [[  {
     return SymbolKind::get(t);
@@ -621,12 +631,12 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         // Last valid token kind.
         let code_max: i32 = ]b4_code_max[;
         if t <= 0 {
-            ]b4_symbol(0, kind)[
+            SymbolKind::get(0)
         } else if t <= code_max {
             let t = i32_to_usize(t);
-            SymbolKind::get(Self::yytranslate_table_[t]).clone()
+            SymbolKind::get(Self::yytranslate_table_[t])
         } else {
-            ]b4_symbol(2, kind)[
+            SymbolKind::get(2)
         }
   }
   ]b4_integral_parser_table_define([translate_table], [b4_translate])[
