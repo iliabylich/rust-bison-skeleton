@@ -85,15 +85,15 @@ fn i32_to_usize(v: i32) -> usize {
 }
 
 /// Maps token ID into human-readable name
-pub fn token_name(id: i32) -> String {
+pub fn token_name(id: i32) -> &'static str { /* ' */
     let first_token = Lexer::YYerror;
     if id > first_token + 1 {
         let pos: usize = (id - first_token + 1)
             .try_into()
             .expect("failed to cast token id into usize, is it negative?");
-        Lexer::TOKEN_NAMES[pos].to_owned()
+        Lexer::TOKEN_NAMES[pos]
     } else if id == 0 {
-        "EOF".to_owned()
+        "EOF"
     } else {
         panic!("token_name fails, {} (first token = {})", id, first_token)
     }
