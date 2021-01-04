@@ -166,64 +166,64 @@ impl Lexer {
 type YYValue = ]b4_yystype[;
 
 #[derive(Clone, Debug)]
+struct YYStackItem {
+    state: i32,
+    value: YYValue,
+    loc: YYLoc,
+}
+
+#[derive(Clone, Debug)]
 pub struct YYStack {
-    state_stack: Vec<i32>,
-    loc_stack: Vec<YYLoc>,
-    value_stack: Vec<YYValue>,
+    stack: Vec<YYStackItem>,
 }
 
 impl YYStack {
     pub(crate) fn new() -> Self {
         Self {
-          state_stack: Vec::with_capacity(20),
-          loc_stack: Vec::with_capacity(20),
-          value_stack: Vec::with_capacity(20),
+          stack: Vec::with_capacity(20),
         }
     }
 
     pub(crate) fn push(&mut self, state: i32, value: YYValue, loc: YYLoc) {
-        self.state_stack.push(state);
-        self.loc_stack.push(loc);
-        self.value_stack.push(value);
+        self.stack.push(YYStackItem { state, value, loc });
     }
 
     pub(crate) fn pop(&mut self) {
-        self.pop_n(1);
+        self.stack.pop();
     }
 
     pub(crate) fn pop_n(&mut self, num: usize) {
-        let len = self.state_stack.len() - num;
-        self.state_stack.truncate(len);
-        self.loc_stack.truncate(len);
-        self.value_stack.truncate(len);
+        let len = self.stack.len() - num;
+        self.stack.truncate(len);
     }
 
     pub(crate) fn state_at(&self, i: usize) -> i32 {
-        self.state_stack[self.len() - 1 - i]
+        self.stack[self.len() - 1 - i].state
     }
 
     pub(crate) fn location_at(&self, i: usize) -> &YYLoc {
-        &self.loc_stack[self.len() - 1 - i]
+        &self.stack[self.len() - 1 - i].loc
     }
 
     pub(crate) fn borrow_value_at(&self, i: usize) -> &YYValue {
-        &self.value_stack[self.len() - 1 - i]
+        &self.stack[self.len() - 1 - i].value
     }
 
     pub(crate) fn owned_value_at(&mut self, i: usize) -> YYValue {
         let len = self.len();
-        std::mem::take(&mut self.value_stack[len - 1 - i])
+        std::mem::take(&mut self.stack[len - 1 - i].value)
     }
 
     pub(crate) fn len(&self) -> usize {
-      self.state_stack.len()
+      self.stack.len()
     }
 }
 
 impl std::fmt::Display for YYStack {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let state = self.state_stack.iter().map(|e| e.to_string()).collect::<Vec<String>>().join(" ");
-        f.write_fmt(format_args!("Stack now states = {} / values = {:?} ", state, self.value_stack))
+        let states = self.stack.iter().map(|e| e.state.to_string()).collect::<Vec<String>>().join(" ");
+        let values = self.stack.iter().map(|e| format!("{:?}", e.value)).collect::<Vec<String>>().join(" ");
+        f.write_fmt(format_args!("Stack now states = {} / values = {:?} ", states, values))
     }
 }
 

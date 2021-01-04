@@ -9,15 +9,13 @@ use std::fs::File;
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 fn main() {
-    let source = "1 + 2 - (4 - 3)\n";
-    let expected = vec![2];
+    let source = "1 + 2 - (4 - 3)";
     let guard = pprof::ProfilerGuard::new(100).unwrap();
 
     for _ in 0..100_000 {
         let lexer = Lexer::new(source);
-        let mut parser = Parser::new(lexer, "perf_test");
-        let actual = parser.do_parse();
-        assert_eq!(actual, expected);
+        let parser = Parser::new(lexer, "perf_test");
+        parser.do_parse();
     }
 
     println!("Creating flamegraph.svg");

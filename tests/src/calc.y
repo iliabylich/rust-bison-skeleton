@@ -10,16 +10,16 @@
 
 %code use {
     // all use goes here
-    use crate::{Token, Lexer, Value, Numbers, Number};
+    use crate::{Token, Lexer, Value, Number};
 }
 
 %code parser_fields {
-  result: Vec<i32>,
-  pub name: String,
+    result: i32,
+    pub name: String,
 }
 
 %code {
-  // code
+    // code
 }
 
 
@@ -29,46 +29,29 @@
     tMINUS  "-"
     tLPAREN "("
     tRPAREN ")"
-    tEOL    _("end of line")
     tNUM    _("number")
     tERROR  "controlled YYERROR"
     tABORT  "controlled YYABORT"
     tACCEPT "controlled YYACCEPT"
-%type <Number> expr stmt number
-%type <Numbers> program stmts
+%type <Number> expr number program
 
 %left "-" "+"
 %left "*" "/"
 
 %%
 
-program: stmts
+ program: expr
             {
-                self.result = $<Numbers>1;
+                self.result = $<Number>1;
+                $$ = Value::None;
+            }
+        | error
+            {
+                self.result = 42;
                 $$ = Value::None;
             }
 
-  stmts: stmts stmt
-            {
-                let mut stmts = $<Numbers>1;
-                stmts.push($<Number>2);
-                $$ = Value::Numbers(stmts);
-            }
-        | stmt
-            {
-                $$ = Value::Numbers(vec![ $<Number>1 ]);
-            }
-
-   stmt: expr tEOL
-            {
-                $$ = $1;
-            }
-        | error tEOL
-            {
-                $$ = Value::Number(-1);
-            }
-
-   expr: number
+    expr: number
             {
                 $$ = $1;
             }
@@ -91,21 +74,26 @@ program: stmts
             }
         | tABORT
             {
+                self.result = Self::ABORTED;
                 return Ok(Self::YYABORT);
             }
         | tACCEPT
             {
+                self.result = Self::ACCEPTED;
                 return Ok(Self::YYACCEPT);
             }
 
- number: tNUM
+  number: tNUM
             {
-                $$ = Value::Number($<Token>1.to_string_lossy().parse::<i32>().unwrap());
+                $$ = Value::Number($<Token>1.token_value);
             }
 
 %%
 
 impl Parser {
+    pub const ACCEPTED: i32 = -1;
+    pub const ABORTED: i32 = -2;
+
     pub fn new(lexer: Lexer, name: &str) -> Self {
         Self {
             yy_error_verbose: true,
@@ -113,14 +101,14 @@ impl Parser {
             yydebug: false,
             yyerrstatus_: 0,
             yylexer: lexer,
-            result: vec![],
+            result: 0,
             name: name.to_owned()
         }
     }
 
-    pub fn do_parse(&mut self) -> Vec<i32> {
+    pub fn do_parse(mut self) -> (i32, String) {
         self.parse();
-        std::mem::take(&mut self.result)
+        (self.result, self.name)
     }
 
     fn next_token(&mut self) -> Token {

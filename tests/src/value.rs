@@ -5,9 +5,8 @@ pub enum Value {
     None,
     Uninitialized,
     Stolen,
-    Token(Box<Token>),
+    Token(Token),
     Number(i32),
-    Numbers(Vec<i32>),
 }
 
 impl Default for Value {
@@ -18,19 +17,7 @@ impl Default for Value {
 
 impl Value {
     pub fn from_token(value: Token) -> Self {
-        Self::Token(Box::new(value))
-    }
-}
-
-#[allow(non_snake_case)]
-pub(crate) mod Numbers {
-    use super::Value;
-
-    pub(crate) fn boxed_from(value: Value) -> Vec<i32> {
-        match value {
-            Value::Numbers(ns) => ns,
-            other => panic!("wrong type, expected Numbers, got {:?}", other),
-        }
+        Self::Token(value)
     }
 }
 
@@ -38,9 +25,9 @@ pub(crate) mod Numbers {
 pub(crate) mod Number {
     use super::Value;
 
-    pub(crate) fn boxed_from(value: Value) -> i32 {
+    pub(crate) fn from(value: Value) -> i32 {
         match value {
-            Value::Number(n) => n,
+            Value::Number(out) => out,
             other => panic!("wrong type, expected Number, got {:?}", other),
         }
     }

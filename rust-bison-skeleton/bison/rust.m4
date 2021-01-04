@@ -131,7 +131,7 @@ m4_define([b4_token_enum],
 [b4_token_visible_if([$1],
     [m4_format([[    // Token %s, to be returned by the scanner.
     #@{allow(non_upper_case_globals, dead_code)@}
-    pub(crate) const %s: i32 = %s%s;
+    pub const %s: i32 = %s%s;
 ]],
                b4_symbol([$1], [tag]),
                b4_symbol([$1], [id]),
@@ -399,7 +399,7 @@ m4_define([b4_rhs_data],
 # between the angle brackets.
 m4_define([b4_rhs_value],
 [m4_ifval([$4],
-          [ $4::boxed_from(b4_rhs_data([$1], [$2]))],
+          [ $4::from(b4_rhs_data([$1], [$2]))],
           [ b4_rhs_data([$1], [$2])])])
 
 
