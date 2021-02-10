@@ -24,6 +24,8 @@ impl Lexer {
                 '9' => (Self::tNUM, 9),
                 '+' => (Self::tPLUS, -1),
                 '-' => (Self::tMINUS, -1),
+                '*' => (Self::tMUL, -1),
+                '/' => (Self::tDIV, -1),
                 '(' => (Self::tLPAREN, -1),
                 ')' => (Self::tRPAREN, -1),
                 'E' => (Self::tERROR, -1),

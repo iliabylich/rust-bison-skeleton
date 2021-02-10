@@ -14,7 +14,7 @@
 }
 
 %code parser_fields {
-    result: i32,
+    result: Option<i32>,
     pub name: String,
 }
 
@@ -27,9 +27,11 @@
 %token
     tPLUS   "+"
     tMINUS  "-"
+    tMUL    "*"
+    tDIV    "/"
     tLPAREN "("
     tRPAREN ")"
-    tNUM    _("number")
+    tNUM    "number"
     tERROR  "controlled YYERROR"
     tABORT  "controlled YYABORT"
     tACCEPT "controlled YYACCEPT"
@@ -42,12 +44,12 @@
 
  program: expr
             {
-                self.result = $<Number>1;
+                self.result = Some($<Number>1);
                 $$ = Value::None;
             }
         | error
             {
-                self.result = 42;
+                self.result = None;
                 $$ = Value::None;
             }
 
@@ -67,6 +69,14 @@
             {
                 $$ = Value::Number($<Number>1 - $<Number>3);
             }
+        | expr tMUL expr
+            {
+                $$ = Value::Number($<Number>1 * $<Number>3);
+            }
+        | expr tDIV expr
+            {
+                $$ = Value::Number($<Number>1 / $<Number>3);
+            }
         | tERROR
             {
                 return Ok(Self::YYERROR);
@@ -74,12 +84,12 @@
             }
         | tABORT
             {
-                self.result = Self::ABORTED;
+                self.result = Some(Self::ABORTED);
                 return Ok(Self::YYABORT);
             }
         | tACCEPT
             {
-                self.result = Self::ACCEPTED;
+                self.result = Some(Self::ACCEPTED);
                 return Ok(Self::YYACCEPT);
             }
 
@@ -101,12 +111,12 @@ impl Parser {
             yydebug: false,
             yyerrstatus_: 0,
             yylexer: lexer,
-            result: 0,
-            name: name.to_owned()
+            result: None,
+            name: name.to_owned(),
         }
     }
 
-    pub fn do_parse(mut self) -> (i32, String) {
+    pub fn do_parse(mut self) -> (Option<i32>, String) {
         self.parse();
         (self.result, self.name)
     }
