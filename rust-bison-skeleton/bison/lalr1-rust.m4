@@ -100,7 +100,7 @@ pub fn token_name(id: i32) -> &'static str { /* ' */
 }
 
 ///
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct ]b4_location_type[ {
     pub begin: usize,
     pub end: usize,
