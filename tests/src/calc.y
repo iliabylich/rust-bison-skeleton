@@ -2,6 +2,7 @@
 
 %define api.parser.struct {Parser}
 %define api.location.type {Loc}
+%define api.location.range_type {u16}
 %define api.value.type {Value}
 
 %define parse.error custom

@@ -102,8 +102,8 @@ pub fn token_name(id: i32) -> &'static str { /* ' */
 ///
 #[derive(Clone, PartialEq)]
 pub struct ]b4_location_type[ {
-    pub begin: usize,
-    pub end: usize,
+    pub begin: ]b4_location_range_type[,
+    pub end: ]b4_location_range_type[,
 }
 
 /// Local alias
@@ -111,7 +111,7 @@ type YYLoc = ]b4_location_type[;
 
 impl YYLoc {
     /// Converts location to a range
-    pub fn to_range(&self) -> std::ops::Range<usize> {
+    pub fn to_range(&self) -> std::ops::Range<]b4_location_range_type[> {
         self.begin..self.end
     }
 }
