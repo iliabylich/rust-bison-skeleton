@@ -65,6 +65,7 @@ b4_percent_code_get([[use]])[
 /// A Bison parser, automatically generated from ]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[.
 #@{derive(Debug)@}
 pub struct ]b4_parser_struct[]b4_parser_generic[ {
+    /// Lexer that is used to get tokens
     pub yylexer: Lexer,
     // true if verbose error messages are enabled.
     #[allow(dead_code)]
@@ -72,6 +73,7 @@ pub struct ]b4_parser_struct[]b4_parser_generic[ {
     // number of errors so far
     yynerrs: i32,
 
+    /// Boolean field that enables printing shift/reduce actions during parsing
     pub yydebug: bool,
 
     yyerrstatus_: i32,
@@ -102,7 +104,9 @@ pub fn token_name(id: i32) -> &'static str { /* ' */
 ///
 #[derive(Clone, PartialEq)]
 pub struct ]b4_location_type[ {
+    /// Begin of the `Loc` range
     pub begin: ]b4_location_range_type[,
+    /// End of the `Loc` range
     pub end: ]b4_location_range_type[,
 }
 

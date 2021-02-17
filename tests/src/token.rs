@@ -3,8 +3,13 @@ use crate::{token_name, Loc, Value};
 /// A token that is emitted by a lexer and consumed by a parser
 #[derive(Clone)]
 pub struct Token {
+    /// Type of the token (i.e. tNUM, tPLUS or YYEOF)
     pub token_type: i32,
+
+    /// Value of the token (i.e. `0`, `1` etc)
     pub token_value: i32,
+
+    /// Location of the token (i.e. range in source code that it refers to)
     pub loc: Loc,
 }
 

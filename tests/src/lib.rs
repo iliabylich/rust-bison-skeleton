@@ -1,3 +1,11 @@
+#![warn(missing_docs)]
+
+/*!
+
+Calc parser example
+
+*/
+
 mod calc;
 mod lexer;
 mod token;

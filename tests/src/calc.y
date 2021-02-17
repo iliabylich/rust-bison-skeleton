@@ -16,6 +16,7 @@
 
 %code parser_fields {
     result: Option<i32>,
+    /// Just an extra field for demonstration
     pub name: String,
 }
 
@@ -102,9 +103,13 @@
 %%
 
 impl Parser {
+    /// "Sucess" status-code of the parser
     pub const ACCEPTED: i32 = -1;
+
+    /// "Failure" status-code of the parser
     pub const ABORTED: i32 = -2;
 
+    /// Constructor
     pub fn new(lexer: Lexer, name: &str) -> Self {
         Self {
             yy_error_verbose: true,
@@ -117,6 +122,8 @@ impl Parser {
         }
     }
 
+    /// Wrapper around generated `parse` method that also
+    /// extracts `result` field and returns it.
     pub fn do_parse(mut self) -> (Option<i32>, String) {
         self.parse();
         (self.result, self.name)

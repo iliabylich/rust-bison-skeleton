@@ -1,5 +1,7 @@
 use crate::{Loc, Token};
 
+/// Lexer struct.
+/// Converts `&str` into `Vec<Token>`
 #[derive(Debug)]
 pub struct Lexer {
     tokens: Vec<Token>,
@@ -7,6 +9,7 @@ pub struct Lexer {
 
 #[allow(non_upper_case_globals)]
 impl Lexer {
+    /// Constructor
     pub fn new(src: &str) -> Self {
         let mut tokens = vec![];
 
