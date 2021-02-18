@@ -33,7 +33,7 @@
     tDIV    "/"
     tLPAREN "("
     tRPAREN ")"
-    tNUM    "number"
+    tNUM    "`number'"
     tERROR  "controlled YYERROR"
     tABORT  "controlled YYABORT"
     tACCEPT "controlled YYACCEPT"
