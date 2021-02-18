@@ -129,7 +129,7 @@ m4_define([b4_integral_parser_table_define],
 # Output the definition of this token as an enum.
 m4_define([b4_token_enum],
 [b4_token_visible_if([$1],
-    [m4_format([[    /// Token %s, to be returned by the scanner.
+    [m4_format([[    /// Token `%s`, to be returned by the scanner.
     #@{allow(non_upper_case_globals, dead_code)@}
     pub const %s: i32 = %s%s;
 ]],
