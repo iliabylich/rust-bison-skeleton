@@ -33,4 +33,8 @@ impl Token {
             other => panic!("expected Token, got {:?}", other),
         }
     }
+
+    pub(crate) fn get_loc(&self) -> Loc {
+        self.loc.clone()
+    }
 }
