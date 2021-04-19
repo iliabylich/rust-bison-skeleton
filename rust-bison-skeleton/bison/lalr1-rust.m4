@@ -102,7 +102,7 @@ pub fn token_name(id: i32) -> &'static str { /* ' */
 }
 
 ///
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq, Copy)]
 #[repr(C)]
 pub struct ]b4_location_type[ {
     /// Begin of the `Loc` range
