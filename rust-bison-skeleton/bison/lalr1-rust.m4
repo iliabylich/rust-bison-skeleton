@@ -185,7 +185,7 @@ pub struct YYStack {
 impl YYStack {
     pub(crate) fn new() -> Self {
         Self {
-          stack: Vec::with_capacity(20),
+          stack: std::vec::Vec::with_capacity(20),
         }
     }
 
