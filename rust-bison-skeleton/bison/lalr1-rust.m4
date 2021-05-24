@@ -179,13 +179,13 @@ struct YYStackItem {
 
 #[derive(Clone, Debug)]
 pub struct YYStack {
-    stack: std::vec::Vec<YYStackItem>,
+    stack: Vec<YYStackItem>,
 }
 
 impl YYStack {
     pub(crate) fn new() -> Self {
         Self {
-          stack: std::vec::Vec::with_capacity(20),
+          stack: Vec::with_capacity(20),
         }
     }
 
@@ -226,8 +226,8 @@ impl YYStack {
 
 impl std::fmt::Display for YYStack {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let states = self.stack.iter().map(|e| e.state.to_string()).collect::<std::vec::Vec<std::string::String>>().join(" ");
-        let values = self.stack.iter().map(|e| format!("{:?}", e.value)).collect::<std::vec::Vec<std::string::String>>().join(" ");
+        let states = self.stack.iter().map(|e| e.state.to_string()).collect::<Vec<String>>().join(" ");
+        let values = self.stack.iter().map(|e| format!("{:?}", e.value)).collect::<Vec<String>>().join(" ");
         f.write_fmt(format_args!("Stack now states = {} / values = {:?} ", states, values))
     }
 }

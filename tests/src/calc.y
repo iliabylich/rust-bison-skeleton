@@ -139,7 +139,7 @@ impl Parser {
 }
 
 impl std::fmt::Debug for Loc {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_ /*'*/>) -> std::result::Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_ /*'*/>) -> Result<(), std::fmt::Error> {
         f.write_str(&format!("{}...{}", self.begin, self.end))
     }
 }

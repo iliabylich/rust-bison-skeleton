@@ -228,9 +228,9 @@ b4_symbol_foreach([b4_symbol_enum])
        that double-quoting is unnecessary unless the string contains an
        apostrophe, a comma, or backslash (other than backslash-backslash).
        YYSTR is taken from yytname.  */
-    fn yytnamerr_(yystr: &str) -> std::string::String {
+    fn yytnamerr_(yystr: &str) -> String {
         if yystr.chars().nth(0) == Some('"') {
-            let mut yyr: std::string::String = "".into();
+            let mut yyr: String = "".into();
             let chars: Vec<char> = yystr.chars().collect();
             for mut i in 1..chars.len() {
                 i += 1;
@@ -264,7 +264,7 @@ b4_symbol_foreach([b4_symbol_enum])
     b4_typed_parser_table_define([&'static str], [tname], [b4_tname])[
 
     /* The user-facing name of this symbol.  */
-    pub(crate) fn name(&self) -> Option<std::string::String> {
+    pub(crate) fn name(&self) -> Option<String> {
         Some(Self::yytnamerr_(Self::yytname_[self.value]?)).map(|s| s.to_owned())
     }
 ]],
@@ -274,7 +274,7 @@ b4_symbol_foreach([b4_symbol_enum])
     b4_typed_parser_table_define([&'static str], [names], [b4_symbol_names])[
 
     /* The user-facing name of this symbol.  */
-    pub(crate) fn name(&self) -> std::string::String {
+    pub(crate) fn name(&self) -> String {
         let code: usize = self.code().try_into().unwrap();
         Self::yynames_[code].to_owned()
     }]])[
