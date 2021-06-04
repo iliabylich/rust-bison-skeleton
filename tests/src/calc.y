@@ -97,7 +97,7 @@
 
   number: tNUM
             {
-                $$ = Value::Number($<Token>1.token_value);
+                $$ = Value::Number($<Token>1.token_value());
             }
 
 %%

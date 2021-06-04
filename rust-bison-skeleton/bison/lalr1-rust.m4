@@ -364,8 +364,8 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     if yychar == Self::YYEMPTY_ {
                         self.yycdebug("Reading a token");
                         let token = self.next_token();
-                        yychar = token.token_type;
-                        yylloc = token.get_loc();
+                        yychar = token.token_type();
+                        yylloc = token.loc().clone();
                         yylval = YYValue::from_token(token);
                     }
 
