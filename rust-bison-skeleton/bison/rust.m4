@@ -335,12 +335,6 @@ m4_define_default([b4_prefix], [b4_api_prefix])
 b4_percent_define_default([[api.parser.struct]], [b4_prefix[]Parser])
 m4_define([b4_parser_struct], [b4_percent_define_get([[api.parser.struct]])])
 
-b4_percent_define_default([[api.location.type]], [Location])
-m4_define([b4_location_type], [b4_percent_define_get([[api.location.type]])])
-
-b4_percent_define_default([[api.location.range_type]], [usize])
-m4_define([b4_location_range_type], [b4_percent_define_get([[api.location.range_type]])])
-
 b4_percent_define_default([[api.position.type]], [Position])
 m4_define([b4_position_type], [b4_percent_define_get([[api.position.type]])])
 

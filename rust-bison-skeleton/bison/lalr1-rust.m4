@@ -101,31 +101,8 @@ pub fn token_name(id: i32) -> &'static str { /* ' */
     }
 }
 
-///
-#[derive(Clone, PartialEq, Eq, Copy)]
-#[repr(C)]
-pub struct ]b4_location_type[ {
-    /// Begin of the `Loc` range
-    pub begin: ]b4_location_range_type[,
-    /// End of the `Loc` range
-    pub end: ]b4_location_range_type[,
-}
-
 /// Local alias
-type YYLoc = ]b4_location_type[;
-
-impl YYLoc {
-    /// Converts location to a range
-    pub fn to_range(&self) -> std::ops::Range<]b4_location_range_type[> {
-        self.begin..self.end
-    }
-}
-
-impl Default for YYLoc {
-    fn default() -> Self {
-        Self { begin: 0, end: 0 }
-    }
-}
+type YYLoc = Loc;
 
 impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {]
 b4_identification[]

@@ -27,7 +27,6 @@ Just like C/C++/Java/D templates the following new directives can be configured:
 
 + `%expect N` where `N` is a number of expected conflicts. Better set it to 0
 + `%define api.parser.struct {Parser}` where `Parser` is the name of your parser struct. Optional, `Parser` is the default name.
-+ `%define api.location.type {Loc}` where `Loc` is the name of the location struct. Optional, `Loc` is the default name.
 + `%define api.value.type {Value}` where `Value` is the name of the derivation result (and a stack item) struct. Optional, `Value` is the default name.
 + `%code use { }` allows you to specify a block of code that will be at the top of the file. Can be a multi-line block, optional, has no default value.
 + `%code parser_fields { }` allows you to specify additional custom fields for your `Parser` struct. Can be a multi-line block, optional, has no default value.
@@ -46,7 +45,6 @@ First, let's define a boilerplate in `src/parser.y`:
 %expect 0
 
 %define api.parser.struct {Parser}
-%define api.location.type {Loc}
 %define api.value.type {Value}
 
 %define parse.error custom
@@ -54,6 +52,7 @@ First, let's define a boilerplate in `src/parser.y`:
 
 %code use {
     // all use goes here
+    use crate::Loc;
 }
 
 %code parser_fields {

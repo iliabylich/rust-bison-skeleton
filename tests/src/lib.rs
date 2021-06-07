@@ -13,11 +13,13 @@ Calc parser example
 
 mod calc;
 mod lexer;
+mod loc;
 mod token;
 mod value;
 
-pub use calc::{token_name, Loc, Parser};
+pub use calc::{token_name, Parser};
 pub use lexer::Lexer;
+pub use loc::Loc;
 pub use token::Token;
 pub use value::Value;
 

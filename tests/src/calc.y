@@ -1,8 +1,6 @@
 %expect 0
 
 %define api.parser.struct {Parser}
-%define api.location.type {Loc}
-%define api.location.range_type {u16}
 %define api.value.type {Value}
 
 %define parse.error custom
@@ -11,7 +9,7 @@
 
 %code use {
     // all use goes here
-    use crate::{Token, Lexer, Value, Number};
+    use crate::{Token, Lexer, Loc, Value, Number};
 }
 
 %code parser_fields {

@@ -41,8 +41,8 @@ impl Lexer {
                 token_type,
                 token_value,
                 Loc {
-                    begin: idx as u16,
-                    end: (idx + 1) as u16,
+                    begin: idx as u32,
+                    end: (idx + 1) as u32,
                 },
             );
             tokens.push(token)
@@ -51,8 +51,8 @@ impl Lexer {
             Self::YYEOF,
             0,
             Loc {
-                begin: src.len() as u16,
-                end: (src.len() + 1) as u16,
+                begin: src.len() as u32,
+                end: (src.len() + 1) as u32,
             },
         ));
 
