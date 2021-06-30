@@ -135,9 +135,3 @@ impl Parser {
         eprintln!("report_syntax_error: {:#?}", ctx)
     }
 }
-
-impl std::fmt::Debug for Loc {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_ /*'*/>) -> Result<(), std::fmt::Error> {
-        f.write_str(&format!("{}...{}", self.begin, self.end))
-    }
-}

@@ -40,20 +40,14 @@ impl Lexer {
             let token = Token::new(
                 token_type,
                 token_value,
-                Loc {
-                    begin: idx as u32,
-                    end: (idx + 1) as u32,
-                },
+                Loc::new(idx as u32, (idx + 1) as u32),
             );
             tokens.push(token)
         }
         tokens.push(Token::new(
             Self::YYEOF,
             0,
-            Loc {
-                begin: src.len() as u32,
-                end: (src.len() + 1) as u32,
-            },
+            Loc::new(src.len() as u32, (src.len() + 1) as u32),
         ));
 
         Self { tokens }
