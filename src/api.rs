@@ -17,6 +17,8 @@ impl fmt::Display for BisonErr {
 
 impl Error for BisonErr {}
 
+/// Creates a `.rs` file from the given `.y` file
+/// Output file is created in the same directory
 pub fn process_bison_file(filepath: &Path) -> Result<(), BisonErr> {
     let input = filepath;
     let output = filepath.with_extension("rs");

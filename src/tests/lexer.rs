@@ -1,4 +1,4 @@
-use crate::{Loc, Token};
+use crate::tests::{Loc, Token};
 
 /// Lexer struct.
 /// Converts `&str` into `Vec<Token>`

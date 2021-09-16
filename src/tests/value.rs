@@ -1,4 +1,4 @@
-use crate::Token;
+use crate::tests::Token;
 
 /// Enum that represents all kinds of values that can be returned
 /// from parser derivations.
@@ -42,7 +42,7 @@ impl Value {
 /// Number is not really a struct, but `Variant::from(Value)` must be provided,
 /// so here we define a `mod` with the same name.
 #[allow(non_snake_case)]
-pub(crate) mod Number {
+pub mod Number {
     use super::Value;
 
     pub(crate) fn from(value: Value) -> i32 {

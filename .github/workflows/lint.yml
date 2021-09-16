@@ -18,6 +18,13 @@ jobs:
           override: true
           components: rustfmt
 
-      - name: run rustfmt
+      - name: install bison
         run: |
-          rustfmt --check **/*.rs
+          brew install bison
+          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+
+      - name: codegen
+        run: cargo build
+
+      - name: run rustfmt
+        run: rustfmt --check **/*.rs

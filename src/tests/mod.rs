@@ -1,5 +1,18 @@
-use rust_bison_skeleton_tests::{Lexer, Parser};
+mod calc;
+mod lexer;
+mod loc;
+mod token;
+mod value;
 
+pub use calc::{token_name, Parser};
+pub use lexer::Lexer;
+pub use loc::Loc;
+pub use token::Token;
+pub use value::Value;
+
+pub use value::Number;
+
+#[cfg(test)]
 fn parse(input: &str, name: &str) -> Option<i32> {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer, name);

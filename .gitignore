@@ -1,4 +1,4 @@
 target/
+src/tests/calc.rs
 Cargo.lock
-src/Calc.rs
 flamegraph.svg
