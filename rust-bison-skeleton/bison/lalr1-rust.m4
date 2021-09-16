@@ -540,6 +540,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
 #@{derive(Debug)@}
 pub(crate) struct Context {
+    #@{allow(dead_code)@}
     yystack: YYStack,
     yytoken: SymbolKind,
     loc: YYLoc
