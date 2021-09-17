@@ -252,7 +252,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
     fn yy_lr_goto_state(&self, yystate: i32, yysym: i32) -> i32 {
         let idx = i32_to_usize(yysym - Self::YYNTOKENS_);
         let yyr = Self::yypgoto_[idx] + yystate;
-        if 0 <= yyr && yyr <= Self::YYLAST_ {
+        if (0..=Self::YYLAST_).contains(&yyr) {
             let yyr = i32_to_usize(yyr);
             if Self::yycheck_[yyr] == yystate {
                 return Self::yytable_[yyr];
@@ -270,7 +270,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         // users should not rely upon it.
         #@{allow(unused_assignments)@}
         let mut yyval: YYValue = YYValue::Uninitialized;
-        let yyloc: YYLoc = make_yylloc(&yystack, *yylen);
+        let yyloc: YYLoc = make_yylloc(yystack, *yylen);
 
         self.yy_reduce_print(yyn, yystack);
 
@@ -318,7 +318,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         self.yynerrs = 0;
 
         /* Initialize the stack.  */
-        yystack.push(yystate, yylval.clone(), yylloc.clone());
+        yystack.push(yystate, yylval.clone(), yylloc);
 
         loop {
             match label {
@@ -348,13 +348,13 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         self.yycdebug("Reading a token");
                         let token = self.next_token();
                         yychar = token.token_type();
-                        yylloc = token.loc().clone();
+                        yylloc = *token.loc();
                         yylval = YYValue::from_token(token);
                     }
 
                     /* Convert token to internal form.  */
                     yytoken = Self::yytranslate_(yychar);
-                    self.yy_symbol_print("Next token is", &yytoken, &yylval, &yylloc);
+                    self.yy_symbol_print("Next token is", yytoken, &yylval, &yylloc);
 
                     if yytoken == SymbolKind::get(1) {
                         // The scanner already issued an error message, process directly
@@ -363,7 +363,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         // loop in error recovery. */
                         yychar = Lexer::]b4_symbol(2, id)[;
                         yytoken = SymbolKind::get(2);
-                        yyerrloc = yylloc.clone();
+                        yyerrloc = yylloc;
                         label = Self::YYERRLAB1;
                     } else {
                         // If the proper action on seeing token YYTOKEN is to reduce or to
@@ -385,7 +385,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                                 }
                             } else {
                                 /* Shift the lookahead token.  */
-                                self.yy_symbol_print("Shifting", &yytoken, &yylval, &yylloc);
+                                self.yy_symbol_print("Shifting", yytoken, &yylval, &yylloc);
 
                                 /* Discard the token being shifted.  */
                                 yychar = Self::YYEMPTY_;
@@ -434,9 +434,9 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         if yychar == Self::YYEMPTY_ {
                             yytoken = &DYMMY_SYMBOL_KIND;
                         }
-                        self.report_syntax_error(&Context::new(yystack.clone(), yytoken.clone(), yylloc.clone()));
+                        self.report_syntax_error(&Context::new(yystack.clone(), yytoken.clone(), yylloc));
                     }
-                    yyerrloc = yylloc.clone();
+                    yyerrloc = yylloc;
                     if self.yyerrstatus_ == 3 {
                         // If just tried and failed to reuse lookahead token after an error, discard it.
 
@@ -476,7 +476,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         yyn = Self::yypact_[i32_to_usize(yystate)];
                         if !yy_pact_value_is_default(yyn) {
                             yyn += SymbolKind { value: SymbolKind::S_YYerror }.code();
-                            if 0 <= yyn && yyn <= Self::YYLAST_ {
+                            if (0..=Self::YYLAST_).contains(&yyn) {
                                 let yyn_usize = i32_to_usize(yyn);
                                 if Self::yycheck_[yyn_usize] == SymbolKind::S_YYerror {
                                     yyn = Self::yytable_[yyn_usize];
@@ -492,7 +492,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                             return false;
                         }
 
-                        yyerrloc = yystack.location_at(0).clone();
+                        yyerrloc = *yystack.location_at(0);
                         yystack.pop();
                         yystate = yystack.state_at(0);
                         if self.yydebug {
@@ -506,8 +506,8 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     }
 
                     /* Muck with the stack to setup for yylloc.  */
-                    yystack.push(0, YYValue::Uninitialized, yylloc.clone());
-                    yystack.push(0, YYValue::Uninitialized, yyerrloc.clone());
+                    yystack.push(0, YYValue::Uninitialized, yylloc);
+                    yystack.push(0, YYValue::Uninitialized, yyerrloc);
                     yyloc = make_yylloc(&yystack, 2);
                     yystack.pop_n(2);
 
@@ -515,7 +515,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     self.yy_symbol_print("Shifting", SymbolKind::get(Self::yystos_[i32_to_usize(yyn)]), &yylval, &yyloc);
 
                     yystate = yyn;
-                    yystack.push(yyn, yylval.clone(), yyloc.clone());
+                    yystack.push(yyn, yylval.clone(), yyloc);
                     label = Self::YYNEWSTATE;
                     continue;
                 }, // YYERRLAB1

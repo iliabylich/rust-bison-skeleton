@@ -16,7 +16,7 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
-          components: rustfmt
+          components: rustfmt, clippy
 
       - name: install bison
         run: |
@@ -28,3 +28,6 @@ jobs:
 
       - name: run rustfmt
         run: rustfmt --check **/*.rs
+
+      - name: run clippy
+        run: cargo clippy --features=examples
