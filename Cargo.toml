@@ -6,7 +6,7 @@ include = ["bison/*.m4", "src/lib.rs", "src/api.rs", "Cargo.toml", "README.md"]
 license = "MIT"
 name = "rust-bison-skeleton"
 repository = "https://github.com/iliabylich/rust-bison-skeleton"
-version = "0.30.0"
+version = "0.31.0"
 
 [lib]
 doctest = false
