@@ -1,5 +1,5 @@
 ///
-#[derive(Clone, PartialEq, Eq, Copy, Default)]
+#[derive(Clone, PartialEq, Eq, Default)]
 #[repr(C)]
 pub struct Loc {
     /// Begin of the `Loc` range
