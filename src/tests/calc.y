@@ -2,6 +2,7 @@
 
 %define api.parser.struct {Parser}
 %define api.value.type {Value}
+%define api.parser.check_debug { self.debug }
 
 %define parse.error custom
 %define parse.trace
@@ -16,6 +17,8 @@ use crate::tests::{Token, Lexer, Loc, Value, Number};
     result: Option<i32>,
     /// Just an extra field for demonstration
     pub name: String,
+    /// Enables debug printing
+    pub debug: bool,
 }
 
 %code {
@@ -112,7 +115,7 @@ impl Parser {
         Self {
             yy_error_verbose: true,
             yynerrs: 0,
-            yydebug: false,
+            debug: false,
             yyerrstatus_: 0,
             yylexer: lexer,
             result: None,

@@ -305,6 +305,7 @@ m4_define([b4_predicate_case],
 
 b4_percent_define_check_kind([[api.value.type]],    [code], [deprecated])
 b4_percent_define_check_kind([[api.parser.struct]],  [code], [deprecated])
+b4_percent_define_check_kind([[api.parser.check_debug]],  [code], [deprecated])
 
 
 
@@ -334,6 +335,9 @@ m4_define_default([b4_prefix], [b4_api_prefix])
 
 b4_percent_define_default([[api.parser.struct]], [b4_prefix[]Parser])
 m4_define([b4_parser_struct], [b4_percent_define_get([[api.parser.struct]])])
+
+b4_percent_define_default([[api.parser.check_debug]], [false])
+m4_define([b4_parser_check_debug], [b4_percent_define_get([[api.parser.check_debug]])])
 
 b4_percent_define_default([[api.position.type]], [Position])
 m4_define([b4_position_type], [b4_percent_define_get([[api.position.type]])])

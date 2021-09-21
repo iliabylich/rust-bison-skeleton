@@ -68,13 +68,10 @@ pub struct ]b4_parser_struct[]b4_parser_generic[ {
     /// Lexer that is used to get tokens
     pub yylexer: Lexer,
     // true if verbose error messages are enabled.
-    #[allow(dead_code)]
+    #@{allow(dead_code)@}
     yy_error_verbose: bool,
     // number of errors so far
     yynerrs: i32,
-
-    /// Boolean field that enables printing shift/reduce actions during parsing
-    pub yydebug: bool,
 
     yyerrstatus_: i32,
 
@@ -93,7 +90,7 @@ pub fn token_name(id: i32) -> &'static str { /* ' */
         let pos: usize = (id - first_token + 1)
             .try_into()
             .expect("failed to cast token id into usize, is it negative?");
-        Lexer::TOKEN_NAMES[pos]
+        Lexer::TOKEN_NAMES@{pos@}
     } else if id == 0 {
         "EOF"
     } else {
@@ -136,17 +133,17 @@ impl Lexer {
 
     // Token values
     #@{allow(dead_code)@}
-    pub(crate) const TOKEN_NAMES: &'static [&'static str] = &]b4_token_values[;
+    pub(crate) const TOKEN_NAMES: &'static @{&'static str@} = &]b4_token_values[;
 }
 ]
 
-[impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {]
+[impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
     fn yycdebug(&self, s: &str) {
-        if self.yydebug {
+        if ]b4_parser_check_debug[ {
             eprintln!("{}", s);
         }
-    }[
+    }][
 
 }
 
@@ -295,7 +292,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
     // Print this symbol on YYOUTPUT.
     fn yy_symbol_print(&self, s: &str, yykind: &SymbolKind, yyvalue: &YYValue, yylocation: &YYLoc) {
-        if self.yydebug {
+        if ]b4_parser_check_debug[ {
             self.yycdebug(
                 &format!("{}{} {:?} ( {:?}: {:?} )", // " fix highlighting
                 s,
@@ -326,7 +323,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                 // pushed when we come here.
 
                 Self::YYNEWSTATE => {
-                    if self.yydebug {
+                    if ]b4_parser_check_debug[ {
                         self.yycdebug(&format!("Entering state {}", yystate));
                         eprintln!("{}", yystack);
                     }
@@ -495,7 +492,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         yyerrloc = yystack.location_at(0).clone();
                         yystack.pop();
                         yystate = yystack.state_at(0);
-                        if self.yydebug {
+                        if ]b4_parser_check_debug[ {
                             eprintln!("{}", yystack);
                         }
                     }
@@ -587,7 +584,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 ][
   // Report on the debug stream that the rule yyrule is going to be reduced.
   fn yy_reduce_print(&self, yyrule: i32, yystack: &YYStack) {
-        if !self.yydebug {
+        if !(]b4_parser_check_debug[) {
             return;
         }
 

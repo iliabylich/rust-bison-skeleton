@@ -8,4 +8,5 @@ fn main() {
             std::process::exit(1);
         }
     }
+    println!("cargo:rerun-if-changed=src/tests/calc.y");
 }

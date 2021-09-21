@@ -16,7 +16,7 @@ pub use value::Number;
 fn parse(input: &str, name: &str) -> Option<i32> {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer, name);
-    parser.yydebug = true;
+    parser.debug = true;
     let (result, stored_name) = parser.do_parse();
 
     assert_eq!(stored_name, name);

@@ -23,13 +23,22 @@ This skeleton is a special file written in M4 language (that is not really a pro
 
 ## Configuration
 
-Just like C/C++/Java/D templates the following new directives can be configured:
+Just like in C/C++/Java/D templates the following directives can be configured:
 
 + `%expect N` where `N` is a number of expected conflicts. Better set it to 0
 + `%define api.parser.struct {Parser}` where `Parser` is the name of your parser struct. Optional, `Parser` is the default name.
 + `%define api.value.type {Value}` where `Value` is the name of the derivation result (and a stack item) struct. Optional, `Value` is the default name.
 + `%code use { }` allows you to specify a block of code that will be at the top of the file. Can be a multi-line block, optional, has no default value.
 + `%code parser_fields { }` allows you to specify additional custom fields for your `Parser` struct. Can be a multi-line block, optional, has no default value.
++ `%define api.parser.check_debug { /* expr */ }` allows you to configure printing debug information, `self` is an instance of your parser, so use something like this if you want to turn it into configurable field:
+
+
+```bison
+%code parser_fields {
+    debug: bool
+}
+%define api.parser.check_debug { self.debug }
+```
 
 All other directives that available in Bison can be configured too, read official Bison docs.
 
@@ -96,7 +105,6 @@ pub struct Parser {
     pub yylexer: Lexer,
     yy_error_verbose: bool,
     yynerrs: i32,
-    pub yydebug: bool,
     yyerrstatus_: i32,
 
     /* "%code parser_fields" blocks.  */
@@ -297,7 +305,6 @@ impl Parser {
         Self {
             yy_error_verbose: true,
             yynerrs: 0,
-            yydebug: false,
             yyerrstatus_: 0,
             yylexer: lexer,
         }
