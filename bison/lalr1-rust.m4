@@ -80,7 +80,7 @@ pub struct ]b4_parser_struct[]b4_parser_generic[ {
 
 #[inline]
 fn i32_to_usize(v: i32) -> usize {
-    v.try_into().unwrap()
+    v as usize
 }
 
 /// Maps token ID into human-readable name

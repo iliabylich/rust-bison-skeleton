@@ -11,11 +11,14 @@ static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 fn main() {
     use rust_bison_skeleton::tests::{Lexer, Parser};
     use std::fs::File;
+    let times = std::env::var("TIMES")
+        .unwrap_or_else(|_| String::from("100_000"))
+        .parse::<usize>()
+        .unwrap();
 
     let source = "1 + 2 - (4 - 3)";
     let guard = pprof::ProfilerGuard::new(100).unwrap();
     let start = std::time::Instant::now();
-    let times = 100_000;
 
     for _ in 0..times {
         let lexer = Lexer::new(source);
