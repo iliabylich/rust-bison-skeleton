@@ -13,7 +13,7 @@ pub use value::Value;
 pub use value::Number;
 
 #[cfg(test)]
-fn parse(input: &str, name: &str) -> Option<i32> {
+fn parse(input: &'static str, name: &str) -> Option<i32> {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer, name);
     parser.debug = true;
