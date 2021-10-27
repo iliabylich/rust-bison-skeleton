@@ -190,11 +190,13 @@ use crate::{Loc, Value};
 #[derive(Clone)]
 pub struct Token {
     // Required field, used by a skeleton
-    token_type: i32,
+    pub token_type: i32,
+
     // Optional field, used by our custom parser
-    token_value: i32,
+    pub token_value: i32,
+
     // Required field, used by a skeleton
-    loc: Loc,
+    pub loc: Loc,
 }
 
 /// `Debug` implementation
@@ -203,40 +205,20 @@ impl std::fmt::Debug for Token {
         f.write_str(&format!(
             "[{}, {:?}, {}...{}]",
             token_name(self.token_type()),
-            self.token_value(),
-            self.loc().begin,
-            self.loc().end
+            self.token_value,
+            self.loc.begin,
+            self.loc.end
         ))
     }
 }
 
 impl Token {
-    pub(crate) fn new(token_type: i32, token_value: i32, loc: Loc) -> Self {
-        Self {
-            token_type,
-            token_value,
-            loc,
-        }
-    }
-
     /// Used by a parser to "unwrap" `Value::Token` variant into a plain Token value
     pub(crate) fn from(value: Value) -> Token {
         match value {
             Value::Token(v) => v,
             other => panic!("expected Token, got {:?}", other),
         }
-    }
-
-    pub(crate) fn token_type(&self) -> i32 {
-        self.token_type
-    }
-
-    pub(crate) fn token_value(&self) -> i32 {
-        self.token_value
-    }
-
-    pub(crate) fn loc(&self) -> &Loc {
-        self.loc
     }
 }
 
@@ -267,24 +249,24 @@ impl Lexer {
                 ' ' => continue,
                 _ => panic!("unknown char {}", c),
             };
-            let token = Token::new(
+            let token = Token {
                 token_type,
                 token_value,
-                Loc {
+                loc: Loc {
                     begin: idx,
                     end: idx + 1,
                 },
-            );
+            };
             tokens.push(token)
         }
-        tokens.push(Token::new(
-            Self::YYEOF,
-            0,
-            Loc {
+        tokens.push(Token {
+            token_type: Self::YYEOF,
+            token_value: 0,
+            loc: Loc {
                 begin: src.len(),
                 end: src.len() + 1,
             },
-        ));
+        });
 
         Self { tokens }
     }
