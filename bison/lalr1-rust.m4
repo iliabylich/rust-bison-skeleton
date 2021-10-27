@@ -315,7 +315,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         self.yynerrs = 0;
 
         /* Initialize the stack.  */
-        yystack.push(yystate, yylval.clone(), yylloc.clone());
+        yystack.push(yystate, yylval.clone(), yylloc);
 
         loop {
             match label {
@@ -345,7 +345,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         self.yycdebug("Reading a token");
                         let token = self.next_token();
                         yychar = token.token_type;
-                        yylloc = token.loc.clone();
+                        yylloc = token.loc;
                         yylval = YYValue::from_token(token);
                     }
 
@@ -360,7 +360,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         // loop in error recovery. */
                         yychar = Lexer::]b4_symbol(2, id)[;
                         yytoken = SymbolKind::get(2);
-                        yyerrloc = yylloc.clone();
+                        yyerrloc = yylloc;
                         label = Self::YYERRLAB1;
                     } else {
                         // If the proper action on seeing token YYTOKEN is to reduce or to
@@ -431,9 +431,9 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         if yychar == Self::YYEMPTY_ {
                             yytoken = &DYMMY_SYMBOL_KIND;
                         }
-                        self.report_syntax_error(&Context::new(yystack.clone(), yytoken.clone(), yylloc.clone()));
+                        self.report_syntax_error(&Context::new(yystack.clone(), yytoken.clone(), yylloc));
                     }
-                    yyerrloc = yylloc.clone();
+                    yyerrloc = yylloc;
                     if self.yyerrstatus_ == 3 {
                         // If just tried and failed to reuse lookahead token after an error, discard it.
 
@@ -489,7 +489,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                             return false;
                         }
 
-                        yyerrloc = yystack.location_at(0).clone();
+                        yyerrloc = *yystack.location_at(0);
                         yystack.pop();
                         yystate = yystack.state_at(0);
                         if ]b4_parser_check_debug[ {
@@ -503,8 +503,8 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     }
 
                     /* Muck with the stack to setup for yylloc.  */
-                    yystack.push(0, YYValue::Uninitialized, yylloc.clone());
-                    yystack.push(0, YYValue::Uninitialized, yyerrloc.clone());
+                    yystack.push(0, YYValue::Uninitialized, yylloc);
+                    yystack.push(0, YYValue::Uninitialized, yyerrloc);
                     yyloc = make_yylloc(&yystack, 2);
                     yystack.pop_n(2);
 
