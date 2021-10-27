@@ -23,7 +23,10 @@ impl Lexer {
             return Token::new(
                 Self::YYEOF,
                 0,
-                Loc::new(self.src.len() as u32, (self.src.len() + 1) as u32),
+                Loc {
+                    begin: self.src.len() as u32,
+                    end: (self.src.len() + 1) as u32,
+                },
             );
         }
         while self.src[self.pos] == b' ' {
@@ -55,7 +58,10 @@ impl Lexer {
         let token = Token::new(
             token_type,
             token_value,
-            Loc::new(self.pos as u32, (self.pos + 1) as u32),
+            Loc {
+                begin: self.pos as u32,
+                end: (self.pos + 1) as u32,
+            },
         );
         self.pos += 1;
         token

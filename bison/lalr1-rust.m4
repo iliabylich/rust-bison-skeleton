@@ -40,10 +40,10 @@ m4_define([b4_define_state],[[
     let mut label: i32 = Self::YYNEWSTATE;
 
     /* The location where the error started.  */
-    let mut yyerrloc: YYLoc = YYLoc::new(0, 0);
+    let mut yyerrloc: YYLoc = YYLoc { begin: 0, end: 0 };
 
     /* Location. */
-    let mut yylloc: YYLoc = YYLoc::new(0, 0);
+    let mut yylloc: YYLoc = YYLoc { begin: 0, end: 0 };
 
     /* Semantic value of the lookahead.  */
     let mut yylval: YYValue = YYValue::Uninitialized;
@@ -108,15 +108,15 @@ b4_identification[]
 [
 fn make_yylloc(rhs: &YYStack, n: usize) -> YYLoc {
     if 0 < n {
-        YYLoc::new(
-            rhs.location_at(n - 1).begin(),
-            rhs.location_at(0).end()
-        )
+        YYLoc {
+            begin: rhs.location_at(n - 1).begin,
+            end: rhs.location_at(0).end
+        }
     } else {
-        YYLoc::new(
-            rhs.location_at(0).end(),
-            rhs.location_at(0).end()
-        )
+        YYLoc {
+            begin: rhs.location_at(0).end,
+            end: rhs.location_at(0).end
+        }
     }
 }
 

@@ -20,8 +20,8 @@ impl fmt::Debug for Token {
             "[{}, {:?}, {}...{}]",
             token_name(self.token_type()),
             self.token_value(),
-            self.loc().begin(),
-            self.loc().end()
+            self.loc().begin,
+            self.loc().end
         ))
     }
 }
