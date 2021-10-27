@@ -20,14 +20,14 @@ impl Lexer {
 
     pub(crate) fn yylex(&mut self) -> Token {
         if self.pos == self.src.len() {
-            return Token::new(
-                Self::YYEOF,
-                0,
-                Loc {
+            return Token {
+                token_type: Self::YYEOF,
+                token_value: 0,
+                loc: Loc {
                     begin: self.src.len() as u32,
                     end: (self.src.len() + 1) as u32,
                 },
-            );
+            };
         }
         while self.src[self.pos] == b' ' {
             self.pos += 1;
@@ -55,14 +55,14 @@ impl Lexer {
             b' ' => return self.yylex(),
             other => panic!("unknown char {}", other as char),
         };
-        let token = Token::new(
+        let token = Token {
             token_type,
             token_value,
-            Loc {
+            loc: Loc {
                 begin: self.pos as u32,
                 end: (self.pos + 1) as u32,
             },
-        );
+        };
         self.pos += 1;
         token
     }
