@@ -150,14 +150,14 @@ impl Lexer {
 /// Local alias
 type YYValue = ]b4_yystype[;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 struct YYStackItem {
     state: i32,
     value: YYValue,
     loc: YYLoc,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct YYStack {
     stack: Vec<YYStackItem>,
 }
@@ -431,7 +431,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         if yychar == Self::YYEMPTY_ {
                             yytoken = &DYMMY_SYMBOL_KIND;
                         }
-                        self.report_syntax_error(&Context::new(yystack.clone(), yytoken.clone(), yylloc));
+                        self.report_syntax_error(&yystack, yytoken, yylloc);
                     }
                     yyerrloc = yylloc;
                     if self.yyerrstatus_ == 3 {
@@ -532,30 +532,6 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                 }
             }
         }
-    }
-}
-
-#@{derive(Debug)@}
-pub(crate) struct Context {
-    #@{allow(dead_code)@}
-    yystack: YYStack,
-    yytoken: SymbolKind,
-    loc: YYLoc
-}
-
-impl Context {
-    pub(crate) fn new(stack: YYStack, token: SymbolKind, loc: YYLoc) -> Self {
-        Self { yystack: stack, yytoken: token, loc }
-    }
-
-    #@{allow(dead_code)@}
-    pub(crate) fn token(&self) -> &SymbolKind {
-        &self.yytoken
-    }
-
-    #@{allow(dead_code)@}
-    pub(crate) fn location(&self) -> &YYLoc {
-        &self.loc
     }
 }
 

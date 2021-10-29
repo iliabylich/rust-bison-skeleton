@@ -134,7 +134,7 @@ impl Parser {
         self.yylexer.yylex()
     }
 
-    fn report_syntax_error(&self, ctx: &Context) {
-        eprintln!("report_syntax_error: {:#?}", ctx)
+    fn report_syntax_error(&self, stack: &YYStack, yytoken: &SymbolKind, loc: YYLoc) {
+        eprintln!("report_syntax_error: {:#?} {:?} {:?}", stack, yytoken, loc)
     }
 }
