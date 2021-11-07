@@ -276,9 +276,11 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
             _ => {}
         }
 
-        if yyval.is_uninitialized() {
-            panic!("yyval is Uninitialized in rule at line {}", Self::yyrline_[i32_to_usize(yyn)]);
-        }
+        assert!(
+            !yyval.is_uninitialized(),
+            "yyval is Uninitialized in rule at line {}",
+            Self::yyrline_[i32_to_usize(yyn)],
+        );
 
         self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[i32_to_usize(yyn)]), &yyval, &yyloc);
 
