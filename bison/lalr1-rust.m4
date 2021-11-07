@@ -46,7 +46,7 @@ m4_define([b4_define_state],[[
     let mut yylloc: YYLoc = YYLoc { begin: 0, end: 0 };
 
     /* Semantic value of the lookahead.  */
-    let mut yylval: YYValue = YYValue::Uninitialized;
+    let mut yylval: YYValue = YYValue::new_uninitialized();
 ]])[
 
 ]b4_output_begin([b4_parser_file_name])[
@@ -266,7 +266,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         // This behavior is undocumented and Bison
         // users should not rely upon it.
         #@{allow(unused_assignments)@}
-        let mut yyval: YYValue = YYValue::Uninitialized;
+        let mut yyval: YYValue = YYValue::new_uninitialized();
         let yyloc: YYLoc = make_yylloc(yystack, *yylen);
 
         self.yy_reduce_print(yyn, yystack);
@@ -276,7 +276,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
             _ => {}
         }
 
-        if let YYValue::Uninitialized = yyval {
+        if yyval.is_uninitialized() {
             panic!("yyval is Uninitialized in rule at line {}", Self::yyrline_[i32_to_usize(yyn)]);
         }
 
@@ -503,8 +503,8 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     }
 
                     /* Muck with the stack to setup for yylloc.  */
-                    yystack.push(0, YYValue::Uninitialized, yylloc);
-                    yystack.push(0, YYValue::Uninitialized, yyerrloc);
+                    yystack.push(0, YYValue::new_uninitialized(), yylloc);
+                    yystack.push(0, YYValue::new_uninitialized(), yyerrloc);
                     yyloc = make_yylloc(&yystack, 2);
                     yystack.pop_n(2);
 
