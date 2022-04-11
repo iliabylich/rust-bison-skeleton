@@ -7,7 +7,7 @@ keywords = ["parser", "LR", "yacc", "bison", "grammar"]
 license = "MIT"
 name = "rust-bison-skeleton"
 repository = "https://github.com/iliabylich/rust-bison-skeleton"
-version = "0.39.0"
+version = "0.40.0"
 
 [lib]
 doctest = false
