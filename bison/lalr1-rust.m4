@@ -308,6 +308,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
     }
 
     /// Parses given input. Returns true if the parsing was successful.
+    #[allow(clippy::manual_range_contains)]
     pub fn parse(&mut self) -> bool {
         /* @@$.  */
         let mut yyloc: YYLoc;
