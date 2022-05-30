@@ -1,10 +1,10 @@
+name: tests
+
 on:
   push:
+    branches: [ master ]
   pull_request:
-  schedule:
-    - cron: '0 1 * * *'
-
-name: tests
+    branches: [ master ]
 
 jobs:
   tests:
@@ -21,13 +21,10 @@ jobs:
           toolchain: nightly
           override: true
 
-      - name: install bison
-        run: |
-          brew install bison
-          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-
-      - name: show bison version
-        run: bison --version
+      - name: setup bison
+        uses: bison-packages/install-bison@v1
+        with:
+          version: '3.8.2'
 
       - name: run tests
         run: cargo test --features=dummy-parser
