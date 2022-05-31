@@ -8,7 +8,7 @@ repository = "https://github.com/iliabylich/rust-bison-skeleton"
 version = "0.0.1"
 
 [dependencies]
-jemallocator = "0.3.2"
+jemallocator = "0.5.0"
 pprof = {version = "0.9", features = ["flamegraph"]}
 tests = {path = "../tests"}
 
