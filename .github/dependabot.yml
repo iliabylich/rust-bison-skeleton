@@ -1,6 +1,14 @@
 version: 2
 updates:
   - package-ecosystem: "cargo"
-    directory: "/tests/"
+    directory: "rust-bison-skeleton/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "tests/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "scripts/"
     schedule:
       interval: "daily"
