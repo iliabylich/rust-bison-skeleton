@@ -200,7 +200,7 @@ m4_define([b4_symbols_count],
 # ----------------------
 # The definition of the symbol internal numbers as an enum.
 m4_define([b4_declare_symbol_enum],
-[[#[derive(Debug, Clone, PartialEq)]
+[[#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SymbolKind { value: i32 }
 
 impl SymbolKind {
