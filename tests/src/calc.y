@@ -10,7 +10,7 @@
 
 %code use {
 // all use goes here
-use crate::tests::{Token, Lexer, Loc, Value, Number};
+use crate::{Token, Lexer, Loc, Value, Number};
 }
 
 %code parser_fields {

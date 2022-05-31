@@ -1,0 +1,11 @@
+[package]
+authors = ["Ilya Bylich <ibylich@gmail.com>"]
+description = "Tests for rust-bison-skeleton"
+edition = "2018"
+license = "MIT"
+name = "tests"
+repository = "https://github.com/iliabylich/rust-bison-skeleton"
+version = "0.0.1"
+
+[build-dependencies]
+rust-bison-skeleton = {path = "../rust-bison-skeleton"}

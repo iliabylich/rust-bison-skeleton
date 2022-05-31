@@ -1,4 +1,4 @@
-use crate::tests::{Loc, Token};
+use crate::{Loc, Token};
 
 /// Lexer struct.
 /// Converts `&'static str` into a list of tokens

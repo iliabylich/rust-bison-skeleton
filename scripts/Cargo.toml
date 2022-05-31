@@ -1,0 +1,18 @@
+[package]
+authors = ["Ilya Bylich <ibylich@gmail.com>"]
+description = "Scripts for rust-bison-skeleton"
+edition = "2018"
+license = "MIT"
+name = "scripts"
+repository = "https://github.com/iliabylich/rust-bison-skeleton"
+version = "0.0.1"
+
+[dependencies]
+jemallocator = "0.3.2"
+pprof = {version = "0.7", features = ["flamegraph"]}
+tests = {path = "../tests"}
+
+[[bin]]
+bench = false
+name = "perf"
+test = false

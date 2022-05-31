@@ -1,11 +1,22 @@
+#![warn(missing_debug_implementations)]
+#![warn(missing_docs)]
+#![warn(trivial_casts, trivial_numeric_casts)]
+#![warn(unused_qualifications)]
+#![warn(deprecated_in_future)]
+#![warn(unused_lifetimes)]
+#![doc = include_str!("../README.md")]
+
 use std::error::Error;
 use std::fmt;
 use std::path::Path;
 use std::process::Command;
 
+/// An error returned from `bison` executable
 #[derive(Debug)]
 pub struct BisonErr {
+    /// stderr
     pub message: String,
+    /// exit code
     pub code: Option<i32>,
 }
 
@@ -23,13 +34,12 @@ pub fn process_bison_file(filepath: &Path) -> Result<(), BisonErr> {
     let input = filepath;
     let output = filepath.with_extension("rs");
 
-    let bison_root_dir = Path::new(file!())
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
+    let bison_root_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("bison");
 
+    eprintln!("CARGO_MANIFEST_DIR = {:?}", env!("CARGO_MANIFEST_DIR"));
+    eprintln!("file = {:?}", file!());
+    eprintln!("current dir = {:?}", std::env::current_dir());
     let bison_root_file = bison_root_dir.join("main.m4");
 
     let args = &[

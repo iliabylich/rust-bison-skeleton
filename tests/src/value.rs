@@ -1,4 +1,4 @@
-use crate::tests::Token;
+use crate::Token;
 
 /// Enum that represents all kinds of values that can be returned
 /// from parser derivations.

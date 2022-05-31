@@ -27,4 +27,4 @@ jobs:
           version: '3.8.2'
 
       - name: run tests
-        run: cargo test --features=dummy-parser
+        run: cargo test

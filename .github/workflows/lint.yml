@@ -34,4 +34,4 @@ jobs:
         run: rustfmt --check **/*.rs
 
       - name: run clippy
-        run: cargo clippy --features=examples
+        run: cargo clippy

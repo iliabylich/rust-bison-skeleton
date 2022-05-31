@@ -1,4 +1,4 @@
-use crate::tests::{token_name, Loc, Value};
+use crate::{token_name, Loc, Value};
 
 /// A token that is emitted by a lexer and consumed by a parser
 #[derive(Clone)]

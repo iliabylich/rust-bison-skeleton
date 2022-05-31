@@ -1,27 +1,7 @@
-[package]
-authors = ["Ilya Bylich <ibylich@gmail.com>"]
-description = "Bison skeleton for Rust"
-edition = "2018"
-include = ["bison/*.m4", "src/lib.rs", "src/api.rs", "Cargo.toml", "README.md"]
-keywords = ["parser", "LR", "yacc", "bison", "grammar"]
-license = "MIT"
-name = "rust-bison-skeleton"
-repository = "https://github.com/iliabylich/rust-bison-skeleton"
-version = "0.40.0"
+[workspace]
 
-[lib]
-doctest = false
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[features]
-default = []
-
-# Enables built-in parser (used for testing and benchmarking)
-dummy-parser = []
-
-# Enables optional dependencies for benchmarking
-examples = ["jemallocator", "pprof"]
-
-[dependencies]
-jemallocator = {version = "0.3.2", optional = true}
-pprof = {version = "0.7", features = ["flamegraph"], optional = true}
+members = [
+  "rust-bison-skeleton",
+  "tests",
+  "scripts",
+]
