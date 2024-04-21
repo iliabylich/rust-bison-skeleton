@@ -66,7 +66,7 @@ b4_percent_code_get([[use]])[
 #@{derive(Debug)@}
 pub struct ]b4_parser_struct[]b4_parser_generic[ {
     /// Lexer that is used to get tokens
-    pub yylexer: Lexer,
+    pub yylexer: Lexer]b4_parser_generic[,
     // true if verbose error messages are enabled.
     #@{allow(dead_code)@}
     yy_error_verbose: bool,
@@ -124,12 +124,12 @@ fn make_yylloc(rhs: &YYStack, n: usize) -> YYLoc {
 
 const DYMMY_SYMBOL_KIND: SymbolKind = SymbolKind { value: 0 };
 
-impl Lexer {
+impl]b4_parser_generic[ Lexer]b4_parser_generic[ {
     ]b4_token_enums[
 
     // Deprecated, use ]b4_symbol(0, id)[ instead.
     #@{allow(dead_code)@}
-    const EOF: i32 = Self::]b4_symbol(0, id)[;
+    const EOF: i32 = Lexer::]b4_symbol(0, id)[;
 
     // Token values
     #@{allow(dead_code)@}
@@ -148,28 +148,28 @@ impl Lexer {
 }
 
 /// Local alias
-type YYValue = ]b4_yystype[;
+type YYValue]b4_parser_generic[ = ]b4_yystype[]b4_parser_generic[;
 
 #[derive(Debug)]
-struct YYStackItem {
+struct YYStackItem]b4_parser_generic[ {
     state: i32,
-    value: YYValue,
+    value: YYValue]b4_parser_generic[,
     loc: YYLoc,
 }
 
 #[derive(Debug)]
-pub struct YYStack {
-    stack: Vec<YYStackItem>,
+pub struct YYStack]b4_parser_generic[ {
+    stack: Vec<YYStackItem]b4_parser_generic[>,
 }
 
-impl YYStack {
+impl]b4_parser_generic[ YYStack]b4_parser_generic[ {
     pub(crate) fn new() -> Self {
         Self {
           stack: Vec::with_capacity(20),
         }
     }
 
-    pub(crate) fn push(&mut self, state: i32, value: YYValue, loc: YYLoc) {
+    pub(crate) fn push(&mut self, state: i32, value: YYValue]b4_parser_generic[, loc: YYLoc) {
         self.stack.push(YYStackItem { state, value, loc });
     }
 
@@ -190,11 +190,11 @@ impl YYStack {
         &self.stack[self.len() - 1 - i].loc
     }
 
-    pub(crate) fn borrow_value_at(&self, i: usize) -> &YYValue {
+    pub(crate) fn borrow_value_at(&self, i: usize) -> &YYValue]b4_parser_generic[ {
         &self.stack[self.len() - 1 - i].value
     }
 
-    pub(crate) fn owned_value_at(&mut self, i: usize) -> YYValue {
+    pub(crate) fn owned_value_at(&mut self, i: usize) -> YYValue]b4_parser_generic[ {
         let len = self.len();
         std::mem::take(&mut self.stack[len - 1 - i].value)
     }
@@ -204,7 +204,7 @@ impl YYStack {
     }
 }
 
-impl std::fmt::Display for YYStack {
+impl]b4_parser_generic[ std::fmt::Display for YYStack]b4_parser_generic[ {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let states = self.stack.iter().map(|e| e.state.to_string()).collect::<Vec<String>>().join(" ");
         let values = self.stack.iter().map(|e| format!("{:?}", e.value)).collect::<Vec<String>>().join(" ");
@@ -258,7 +258,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         Self::yydefgoto_[idx]
     }
 
-    fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack, yylen: &mut usize) -> Result<i32, ()> {
+    fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack]b4_parser_generic[, yylen: &mut usize) -> Result<i32, ()> {
         // If YYLEN is nonzero, implement the default value of the action:
         // '$$ = $1'.  Otherwise, use the top of the stack.
         //
@@ -266,7 +266,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         // This behavior is undocumented and Bison
         // users should not rely upon it.
         #@{allow(unused_assignments)@}
-        let mut yyval: YYValue = YYValue::new_uninitialized();
+        let mut yyval: YYValue]b4_parser_generic[ = YYValue::new_uninitialized();
         let yyloc: YYLoc = make_yylloc(yystack, *yylen);
 
         self.yy_reduce_print(yyn, yystack);
@@ -318,7 +318,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         self.yynerrs = 0;
 
         /* Initialize the stack.  */
-        yystack.push(yystate, yylval.clone(), yylloc);
+        yystack.push(yystate, YYValue::new_uninitialized(), yylloc);
 
         loop {
             match label {
@@ -515,7 +515,9 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     self.yy_symbol_print("Shifting", SymbolKind::get(Self::yystos_[i32_to_usize(yyn)]), &yylval, &yyloc);
 
                     yystate = yyn;
-                    yystack.push(yyn, yylval.clone(), yyloc);
+                    let copy = yylval.make_copy(self.blob);
+                    yystack.push(yyn, yylval, yyloc);
+                    yylval = copy;
                     label = Self::YYNEWSTATE;
                     continue;
                 }, // YYERRLAB1
@@ -599,7 +601,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
             SymbolKind::get(0)
         } else if t <= code_max {
             let t = i32_to_usize(t);
-            SymbolKind::get(Self::yytranslate_table_[t])
+            SymbolKind::get(Parser::yytranslate_table_[t])
         } else {
             SymbolKind::get(2)
         }
