@@ -40,10 +40,10 @@ m4_define([b4_define_state],[[
     let mut label: i32 = Self::YYNEWSTATE;
 
     /* The location where the error started.  */
-    let mut yyerrloc: YYLoc = YYLoc { begin: 0, end: 0 };
+    let mut yyerrloc: YYLoc = YYLoc::new(0, 0);
 
     /* Location. */
-    let mut yylloc: YYLoc = YYLoc { begin: 0, end: 0 };
+    let mut yylloc: YYLoc = YYLoc::new(0, 0);
 
     /* Semantic value of the lookahead.  */
     let mut yylval: YYValue = YYValue::new_uninitialized();
@@ -57,7 +57,7 @@ m4_define([b4_define_state],[[
 ]])[
 ]b4_user_pre_prologue[
 ]b4_user_post_prologue[
-use std::convert::TryInto;
+use core::convert::TryInto;
 
 ]
 b4_percent_code_get([[use]])[
@@ -108,15 +108,15 @@ b4_identification[]
 [
 fn make_yylloc(rhs: &YYStack, n: usize) -> YYLoc {
     if 0 < n {
-        YYLoc {
-            begin: rhs.location_at(n - 1).begin,
-            end: rhs.location_at(0).end
-        }
+        YYLoc::new(
+            rhs.location_at(n - 1).begin(),
+            rhs.location_at(0).end()
+        )
     } else {
-        YYLoc {
-            begin: rhs.location_at(0).end,
-            end: rhs.location_at(0).end
-        }
+        YYLoc::new(
+            rhs.location_at(0).end(),
+            rhs.location_at(0).end()
+        )
     }
 }
 
@@ -196,7 +196,7 @@ impl]b4_parser_generic[ YYStack]b4_parser_generic[ {
 
     pub(crate) fn owned_value_at(&mut self, i: usize) -> YYValue]b4_parser_generic[ {
         let len = self.len();
-        std::mem::take(&mut self.stack[len - 1 - i].value)
+        core::mem::take(&mut self.stack[len - 1 - i].value)
     }
 
     pub(crate) fn len(&self) -> usize {
@@ -204,8 +204,8 @@ impl]b4_parser_generic[ YYStack]b4_parser_generic[ {
     }
 }
 
-impl]b4_parser_generic[ std::fmt::Display for YYStack]b4_parser_generic[ {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl]b4_parser_generic[ core::fmt::Display for YYStack]b4_parser_generic[ {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let states = self.stack.iter().map(|e| e.state.to_string()).collect::<Vec<String>>().join(" ");
         let values = self.stack.iter().map(|e| format!("{:?}", e.value)).collect::<Vec<String>>().join(" ");
         f.write_fmt(format_args!("Stack now states = {} / values = {:?} ", states, values))
@@ -396,7 +396,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                                 }
 
                                 yystate = yyn;
-                                yystack.push(yystate, std::mem::take(&mut yylval), std::mem::take(&mut yylloc));
+                                yystack.push(yystate, core::mem::take(&mut yylval), core::mem::take(&mut yylloc));
                                 label = Self::YYNEWSTATE;
                             }
                         }

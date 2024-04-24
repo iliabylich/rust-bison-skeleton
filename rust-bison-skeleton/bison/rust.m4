@@ -274,9 +274,9 @@ b4_symbol_foreach([b4_symbol_enum])
     b4_typed_parser_table_define([&'static str], [names], [b4_symbol_names])[
 
     /* The user-facing name of this symbol.  */
-    pub(crate) fn name(&self) -> String {
+    pub(crate) fn name(&self) -> &'static str {
         let code: usize = self.code().try_into().unwrap();
-        Self::yynames_[code].to_owned()
+        Self::yynames_[code]
     }]])[
 }
 ]])])
@@ -400,7 +400,7 @@ m4_define([b4_rhs_data],
 # between the angle brackets.
 m4_define([b4_rhs_value],
 [m4_ifval([$4],
-          [ $4::from(b4_rhs_data([$1], [$2]))],
+          [ $4::from_value(b4_rhs_data([$1], [$2]))],
           [ b4_rhs_data([$1], [$2])])])
 
 
