@@ -186,8 +186,8 @@ impl]b4_parser_generic[ YYStack]b4_parser_generic[ {
         self.stack[self.len() - 1 - i].state
     }
 
-    pub(crate) fn location_at(&self, i: usize) -> &YYLoc {
-        &self.stack[self.len() - 1 - i].loc
+    pub(crate) fn location_at(&self, i: usize) -> YYLoc {
+        self.stack[self.len() - 1 - i].loc
     }
 
     pub(crate) fn borrow_value_at(&self, i: usize) -> &YYValue]b4_parser_generic[ {
@@ -282,7 +282,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
             Self::yyrline_[i32_to_usize(yyn)],
         );
 
-        self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[i32_to_usize(yyn)]), &yyval, &yyloc);
+        self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[i32_to_usize(yyn)]), &yyval, yyloc);
 
         yystack.pop_n(*yylen);
         *yylen = 0;
@@ -293,15 +293,15 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
     }
 
     // Print this symbol on YYOUTPUT.
-    fn yy_symbol_print(&self, s: &str, yykind: &SymbolKind, yyvalue: &YYValue, yylocation: &YYLoc) {
+    fn yy_symbol_print(&self, s: &str, yykind: &SymbolKind, yyvalue: &YYValue, yylocation: YYLoc) {
         if ]b4_parser_check_debug[ {
             self.yycdebug(
                 &format!("{}{} {:?} ( {:?}: {:?} )", // " fix highlighting
-                s,
-                if yykind.code() < Self::YYNTOKENS_ { " token " } else { " nterm " },
-                yykind.name(),
-                yylocation,
-                yyvalue
+                    s,
+                    if yykind.code() < Self::YYNTOKENS_ { " token " } else { " nterm " },
+                    yykind.name(),
+                    yylocation,
+                    yyvalue
                 )
             )
         }
@@ -354,7 +354,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
                     /* Convert token to internal form.  */
                     yytoken = Self::yytranslate_(yychar);
-                    self.yy_symbol_print("Next token is", yytoken, &yylval, &yylloc);
+                    self.yy_symbol_print("Next token is", yytoken, &yylval, yylloc);
 
                     if yytoken == SymbolKind::get(1) {
                         // The scanner already issued an error message, process directly
@@ -385,7 +385,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                                 }
                             } else {
                                 /* Shift the lookahead token.  */
-                                self.yy_symbol_print("Shifting", yytoken, &yylval, &yylloc);
+                                self.yy_symbol_print("Shifting", yytoken, &yylval, yylloc);
 
                                 /* Discard the token being shifted.  */
                                 yychar = Self::YYEMPTY_;
@@ -492,7 +492,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                             return false;
                         }
 
-                        yyerrloc = *yystack.location_at(0);
+                        yyerrloc = yystack.location_at(0);
                         yystack.pop();
                         yystate = yystack.state_at(0);
                         if ]b4_parser_check_debug[ {
@@ -512,7 +512,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     yystack.pop_n(2);
 
                     /* Shift the error token.  */
-                    self.yy_symbol_print("Shifting", SymbolKind::get(Self::yystos_[i32_to_usize(yyn)]), &yylval, &yyloc);
+                    self.yy_symbol_print("Shifting", SymbolKind::get(Self::yystos_[i32_to_usize(yyn)]), &yylval, yyloc);
 
                     yystate = yyn;
                     let copy = yylval.make_copy(self.blob);
