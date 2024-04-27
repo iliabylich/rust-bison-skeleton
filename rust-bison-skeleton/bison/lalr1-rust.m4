@@ -139,60 +139,6 @@ impl]b4_parser_generic[ Lexer]b4_parser_generic[ {
 /// Local alias
 type YYValue]b4_parser_generic[ = ]b4_yystype[]b4_parser_generic[;
 
-#[derive(Debug)]
-struct YYStackItem]b4_parser_generic[ {
-    state: i32,
-    value: YYValue]b4_parser_generic[,
-    loc: YYLoc,
-}
-
-#[derive(Debug)]
-pub struct YYStack]b4_parser_generic[ {
-    stack: Vec<YYStackItem]b4_parser_generic[>,
-}
-
-impl]b4_parser_generic[ YYStack]b4_parser_generic[ {
-    pub(crate) fn new() -> Self {
-        Self {
-          stack: Vec::with_capacity(20),
-        }
-    }
-
-    pub(crate) fn push(&mut self, state: i32, value: YYValue]b4_parser_generic[, loc: YYLoc) {
-        self.stack.push(YYStackItem { state, value, loc });
-    }
-
-    pub(crate) fn pop(&mut self) {
-        self.stack.pop();
-    }
-
-    pub(crate) fn pop_n(&mut self, num: usize) {
-        let len = self.stack.len() - num;
-        self.stack.truncate(len);
-    }
-
-    pub(crate) fn state_at(&self, i: usize) -> i32 {
-        self.stack[self.len() - 1 - i].state
-    }
-
-    pub(crate) fn location_at(&self, i: usize) -> YYLoc {
-        self.stack[self.len() - 1 - i].loc
-    }
-
-    pub(crate) fn borrow_value_at(&self, i: usize) -> &YYValue]b4_parser_generic[ {
-        &self.stack[self.len() - 1 - i].value
-    }
-
-    pub(crate) fn owned_value_at(&mut self, i: usize) -> YYValue]b4_parser_generic[ {
-        let len = self.len();
-        core::mem::take(&mut self.stack[len - 1 - i].value)
-    }
-
-    pub(crate) fn len(&self) -> usize {
-      self.stack.len()
-    }
-}
-
 impl]b4_parser_generic[ core::fmt::Display for YYStack]b4_parser_generic[ {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "Stack now states =")?;
