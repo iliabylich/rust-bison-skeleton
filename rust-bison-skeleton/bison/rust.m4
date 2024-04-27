@@ -271,9 +271,11 @@ b4_symbol_foreach([b4_symbol_enum])
 [custom\|detailed],
 [[    /* YYNAMES_[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
     First, the terminals, then, starting at \a YYNTOKENS_, nonterminals.  */]
+    #@{allow(dead_code)@}
     b4_typed_parser_table_define([&'static str], [names], [b4_symbol_names])[
 
     /* The user-facing name of this symbol.  */
+    #@{allow(dead_code)@}
     pub(crate) fn name(&self) -> &'static str {
         let code: usize = self.code().try_into().unwrap();
         Self::yynames_[code]

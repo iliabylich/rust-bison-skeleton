@@ -135,18 +135,7 @@ impl]b4_parser_generic[ Lexer]b4_parser_generic[ {
     #@{allow(dead_code)@}
     pub(crate) const TOKEN_NAMES: &'static @{&'static str@} = &]b4_token_values[;
 }
-]
-
-[impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
-
-    fn yycdebug(&self, s: &str) {
-        if ]b4_parser_check_debug[ {
-            eprintln!("{}", s);
-        }
-    }][
-
-}
-
+][
 /// Local alias
 type YYValue]b4_parser_generic[ = ]b4_yystype[]b4_parser_generic[;
 
@@ -206,9 +195,15 @@ impl]b4_parser_generic[ YYStack]b4_parser_generic[ {
 
 impl]b4_parser_generic[ core::fmt::Display for YYStack]b4_parser_generic[ {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let states = self.stack.iter().map(|e| e.state.to_string()).collect::<Vec<String>>().join(" ");
-        let values = self.stack.iter().map(|e| format!("{:?}", e.value)).collect::<Vec<String>>().join(" ");
-        f.write_fmt(format_args!("Stack now states = {} / values = {:?} ", states, values))
+        write!(f, "Stack now states =")?;
+        for item in self.stack.iter() {
+            write!(f, " {}", item.state)?;
+        }
+        write!(f, " / values =")?;
+        for item in self.stack.iter() {
+            write!(f, " {:?}", item.value)?;
+        }
+        Ok(())
     }
 }
 
@@ -294,17 +289,14 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
     // Print this symbol on YYOUTPUT.
     fn yy_symbol_print(&self, s: &str, yykind: &SymbolKind, yyvalue: &YYValue, yylocation: YYLoc) {
-        if ]b4_parser_check_debug[ {
-            self.yycdebug(
-                &format!("{}{} {:?} ( {:?}: {:?} )", // " fix highlighting
-                    s,
-                    if yykind.code() < Self::YYNTOKENS_ { " token " } else { " nterm " },
-                    yykind.name(),
-                    yylocation,
-                    yyvalue
-                )
-            )
-        }
+        println_if_debug_parser!(
+            "{}{} {:?} ( {:?}: {:?} )",
+            s,
+            if yykind.code() < Self::YYNTOKENS_ { " token " } else { " nterm " },
+            yykind.name(),
+            yylocation,
+            yyvalue
+        )
     }
 
     /// Parses given input. Returns true if the parsing was successful.
@@ -313,7 +305,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         /* @@$.  */
         let mut yyloc: YYLoc;
         ]b4_define_state[
-        self.yycdebug("Starting parse");
+        println_if_debug_parser!("Starting parse");
         self.yyerrstatus_ = 0;
         self.yynerrs = 0;
 
@@ -326,10 +318,8 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                 // pushed when we come here.
 
                 Self::YYNEWSTATE => {
-                    if ]b4_parser_check_debug[ {
-                        self.yycdebug(&format!("Entering state {}", yystate));
-                        eprintln!("{}", yystack);
-                    }
+                    println_if_debug_parser!("Entering state {}", yystate);
+                    println_if_debug_parser!("{}", yystack);
 
                     /* Accept? */
                     if yystate == Self::YYFINAL_ {
@@ -345,7 +335,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
                     /* Read a lookahead token.  */
                     if yychar == Self::YYEMPTY_ {
-                        self.yycdebug("Reading a token");
+                        println_if_debug_parser!("Reading a token");
                         let token = self.next_token();
                         yychar = token.token_type;
                         yylloc = token.loc;
@@ -495,9 +485,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         yyerrloc = yystack.location_at(0);
                         yystack.pop();
                         yystate = yystack.state_at(0);
-                        if ]b4_parser_check_debug[ {
-                            eprintln!("{}", yystack);
-                        }
+                        println_if_debug_parser!("{}", yystack);
                     }
 
                     if label == Self::YYABORT {
@@ -572,7 +560,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         let yylno = Self::yyrline_[i32_to_usize(yyrule)];
         let yynrhs = Self::yyr2_[i32_to_usize(yyrule)];
         // Print the symbols being reduced, and their result.
-        self.yycdebug(&format!("Reducing stack by rule {} (line {}):", /* " fix */ yyrule - 1, yylno));
+        println_if_debug_parser!("Reducing stack by rule {} (line {}):", /* " fix */ yyrule - 1, yylno);
 
         // The symbols being reduced.
         for yyi in 0..yynrhs {
