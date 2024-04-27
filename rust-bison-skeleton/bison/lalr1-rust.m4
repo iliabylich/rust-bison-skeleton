@@ -207,6 +207,21 @@ impl]b4_parser_generic[ core::fmt::Display for YYStack]b4_parser_generic[ {
     }
 }
 
+
+// Print this symbol on YYOUTPUT.
+macro_rules! yy_symbol_print {
+    ($s:expr, $yykind:expr, $yyvalue:expr, $yylocation:expr) => {
+        println_if_debug_parser!(
+            "{}{} {:?} ( {:?}: {:?} )",
+            $s,
+            if $yykind.code() < Parser::YYNTOKENS_ { " token " } else { " nterm " },
+            $yykind.name(),
+            $yylocation,
+            $yyvalue
+        )
+    };
+}
+
 impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
   /// Returned by a Bison action in order to stop the parsing process and
   /// return success (true).
@@ -277,7 +292,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
             Self::yyrline_[i32_to_usize(yyn)],
         );
 
-        self.yy_symbol_print("-> $$ =", SymbolKind::get(Self::yyr1_[i32_to_usize(yyn)]), &yyval, yyloc);
+        yy_symbol_print!("-> $$ =", SymbolKind::get(Self::yyr1_[i32_to_usize(yyn)]), &yyval, yyloc);
 
         yystack.pop_n(*yylen);
         *yylen = 0;
@@ -285,18 +300,6 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         let yystate = self.yy_lr_goto_state(yystack.state_at(0), Self::yyr1_[i32_to_usize(yyn)]);
         yystack.push(yystate, yyval, yyloc);
         Ok(Self::YYNEWSTATE)
-    }
-
-    // Print this symbol on YYOUTPUT.
-    fn yy_symbol_print(&self, s: &str, yykind: &SymbolKind, yyvalue: &YYValue, yylocation: YYLoc) {
-        println_if_debug_parser!(
-            "{}{} {:?} ( {:?}: {:?} )",
-            s,
-            if yykind.code() < Self::YYNTOKENS_ { " token " } else { " nterm " },
-            yykind.name(),
-            yylocation,
-            yyvalue
-        )
     }
 
     /// Parses given input. Returns true if the parsing was successful.
@@ -344,7 +347,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
                     /* Convert token to internal form.  */
                     yytoken = Self::yytranslate_(yychar);
-                    self.yy_symbol_print("Next token is", yytoken, &yylval, yylloc);
+                    yy_symbol_print!("Next token is", yytoken, &yylval, yylloc);
 
                     if yytoken == SymbolKind::get(1) {
                         // The scanner already issued an error message, process directly
@@ -375,7 +378,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                                 }
                             } else {
                                 /* Shift the lookahead token.  */
-                                self.yy_symbol_print("Shifting", yytoken, &yylval, yylloc);
+                                yy_symbol_print!("Shifting", yytoken, &yylval, yylloc);
 
                                 /* Discard the token being shifted.  */
                                 yychar = Self::YYEMPTY_;
@@ -500,7 +503,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     yystack.pop_n(2);
 
                     /* Shift the error token.  */
-                    self.yy_symbol_print("Shifting", SymbolKind::get(Self::yystos_[i32_to_usize(yyn)]), &yylval, yyloc);
+                    yy_symbol_print!("Shifting", SymbolKind::get(Self::yystos_[i32_to_usize(yyn)]), &yylval, yyloc);
 
                     yystate = yyn;
                     let copy = yylval.make_copy(self.blob);
@@ -552,6 +555,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
 ][
   // Report on the debug stream that the rule yyrule is going to be reduced.
+  #@{allow(unused_variables)@}
   fn yy_reduce_print(&self, yyrule: i32, yystack: &YYStack) {
         if !(]b4_parser_check_debug[) {
             return;
@@ -565,12 +569,18 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         // The symbols being reduced.
         for yyi in 0..yynrhs {
             let state: usize = i32_to_usize(yystack.state_at(i32_to_usize(yynrhs - (yyi + 1))));
-            self.yy_symbol_print(
-                &format!("   ${} =", yyi + 1),
-                SymbolKind::get(Self::yystos_[state]),
-                yystack.borrow_value_at(i32_to_usize(yynrhs - (yyi + 1))),
-                yystack.location_at(i32_to_usize(yynrhs - (yyi + 1)))
-            );
+            let yykind = SymbolKind::get(Self::yystos_[state]);
+            let yyvalue = yystack.borrow_value_at(i32_to_usize(yynrhs - (yyi + 1)));
+            let yylocation = yystack.location_at(i32_to_usize(yynrhs - (yyi + 1)));
+
+            println_if_debug_parser!(
+                "   ${} ={} {:?} ( {:?}: {:?} )",
+                yyi + 1,
+                if yykind.code() < Self::YYNTOKENS_ { " token " } else { " nterm " },
+                yykind.name(),
+                yylocation,
+                yyvalue
+            )
         }
   }][
 
