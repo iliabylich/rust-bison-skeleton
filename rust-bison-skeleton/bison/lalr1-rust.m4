@@ -36,7 +36,7 @@ m4_define([b4_define_state],[[
     let mut yyn: i32 = 0;
     let mut yylen: usize = 0;
     let mut yystate: i32 = 0;
-    let mut yystack = YYStack::new();
+    let mut yystack = YYStack::new(stack);
     let mut label: i32 = Self::YYNEWSTATE;
 
     /* The location where the error started.  */
@@ -64,9 +64,9 @@ b4_percent_code_get([[use]])[
 
 /// A Bison parser, automatically generated from ]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[.
 #@{derive(Debug)@}
-pub struct ]b4_parser_struct[]b4_parser_generic[ {
+pub struct ]b4_parser_struct[<'b> {
     /// Lexer that is used to get tokens
-    pub yylexer: Lexer]b4_parser_generic[,
+    pub yylexer: Lexer<'b>,
     // true if verbose error messages are enabled.
     #@{allow(dead_code)@}
     yy_error_verbose: bool,
@@ -101,7 +101,7 @@ pub fn token_name(id: i32) -> &'static str { /* ' */
 /// Local alias
 type YYLoc = Loc;
 
-impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {]
+impl<'b> ]b4_parser_struct[<'b> {]
 b4_identification[]
 [}]
 
@@ -124,7 +124,7 @@ fn make_yylloc(rhs: &YYStack, n: usize) -> YYLoc {
 
 const DYMMY_SYMBOL_KIND: SymbolKind = SymbolKind { value: 0 };
 
-impl]b4_parser_generic[ Lexer]b4_parser_generic[ {
+impl<'b> Lexer<'b> {
     ]b4_token_enums[
 
     // Deprecated, use ]b4_symbol(0, id)[ instead.
@@ -137,22 +137,7 @@ impl]b4_parser_generic[ Lexer]b4_parser_generic[ {
 }
 ][
 /// Local alias
-type YYValue]b4_parser_generic[ = ]b4_yystype[]b4_parser_generic[;
-
-impl]b4_parser_generic[ core::fmt::Display for YYStack]b4_parser_generic[ {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "Stack now states =")?;
-        for item in self.stack.iter() {
-            write!(f, " {}", item.state)?;
-        }
-        write!(f, " / values =")?;
-        for item in self.stack.iter() {
-            write!(f, " {:?}", item.value)?;
-        }
-        Ok(())
-    }
-}
-
+type YYValue<'b> = ]b4_yystype[<'b>;
 
 // Print this symbol on YYOUTPUT.
 macro_rules! yy_symbol_print {
@@ -168,7 +153,7 @@ macro_rules! yy_symbol_print {
     };
 }
 
-impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
+impl<'b> ]b4_parser_struct[<'b> {
   /// Returned by a Bison action in order to stop the parsing process and
   /// return success (true).
   pub(crate) const YYACCEPT: i32 = 0;
@@ -203,18 +188,18 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
     // yystate:   the current state
     // yysym:     the nonterminal to push on the stack
     fn yy_lr_goto_state(&self, yystate: i32, yysym: i32) -> i32 {
-        let idx = i32_to_usize(yysym - Self::YYNTOKENS_);
-        let yyr = Self::yypgoto_[idx] + yystate;
-        if (0..=Self::YYLAST_).contains(&yyr) {
+        let idx = i32_to_usize(yysym - Parser::YYNTOKENS_);
+        let yyr = Parser::yypgoto_[idx] + yystate;
+        if (0..=Parser::YYLAST_).contains(&yyr) {
             let yyr = i32_to_usize(yyr);
-            if Self::yycheck_[yyr] == yystate {
-                return Self::yytable_[yyr];
+            if Parser::yycheck_[yyr] == yystate {
+                return Parser::yytable_[yyr];
             }
         }
-        Self::yydefgoto_[idx]
+        Parser::yydefgoto_[idx]
     }
 
-    fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack]b4_parser_generic[, yylen: &mut usize) -> Result<i32, ()> {
+    fn yyaction(&mut self, yyn: i32, yystack: &mut YYStack<'b>, yylen: &mut usize) -> Result<i32, ()> {
         // If YYLEN is nonzero, implement the default value of the action:
         // '$$ = $1'.  Otherwise, use the top of the stack.
         //
@@ -222,7 +207,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
         // This behavior is undocumented and Bison
         // users should not rely upon it.
         #@{allow(unused_assignments)@}
-        let mut yyval: YYValue]b4_parser_generic[ = YYValue::new_uninitialized();
+        let mut yyval: YYValue<'b> = YYValue::new_uninitialized();
         let yyloc: YYLoc = make_yylloc(yystack, *yylen);
 
         self.yy_reduce_print(yyn, yystack);
@@ -250,7 +235,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
     /// Parses given input. Returns true if the parsing was successful.
     #[allow(clippy::manual_range_contains)]
-    pub fn parse(&mut self) -> bool {
+    pub fn parse<'s: 'b>(&mut self, stack: &'s mut [YYStackItem]) -> bool {
         /* @@$.  */
         let mut yyloc: YYLoc;
         ]b4_define_state[
@@ -268,10 +253,10 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
 
                 Self::YYNEWSTATE => {
                     println_if_debug_parser!("Entering state {}", yystate);
-                    println_if_debug_parser!("{}", yystack);
+                    println_if_debug_parser!("{}", &yystack);
 
                     /* Accept? */
-                    if yystate == Self::YYFINAL_ {
+                    if yystate == Parser::YYFINAL_ {
                         return true;
                     }
 
@@ -283,7 +268,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                     }
 
                     /* Read a lookahead token.  */
-                    if yychar == Self::YYEMPTY_ {
+                    if yychar == Parser::YYEMPTY_ {
                         println_if_debug_parser!("Reading a token");
                         let token = self.next_token();
                         yychar = token.token_type;
@@ -373,7 +358,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
                         if yychar == Self::YYEMPTY_ {
                             yytoken = &DYMMY_SYMBOL_KIND;
                         }
-                        self.report_syntax_error(&yystack, yytoken, yylloc);
+                        self.report_syntax_error(yytoken, yylloc);
                     }
                     yyerrloc = yylloc;
                     if self.yyerrstatus_ == 3 {
@@ -492,7 +477,7 @@ fn yy_table_value_is_error(yyvalue: i32) -> bool {
 const YYPACT_NINF_: ]b4_int_type_for([b4_pact])[ = ]b4_pact_ninf[;
 const YYTABLE_NINF_: ]b4_int_type_for([b4_table])[ = ]b4_table_ninf[;
 
-impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
+impl<'b> ]b4_parser_struct[<'b> {
 
 ]b4_parser_tables_define[
 
@@ -522,7 +507,7 @@ impl]b4_parser_generic[ ]b4_parser_struct[]b4_parser_generic[ {
             println_if_debug_parser!(
                 "   ${} ={} {:?} ( {:?}: {:?} )",
                 yyi + 1,
-                if yykind.code() < Self::YYNTOKENS_ { " token " } else { " nterm " },
+                if yykind.code() < Parser::YYNTOKENS_ { " token " } else { " nterm " },
                 yykind.name(),
                 yylocation,
                 yyvalue
