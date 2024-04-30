@@ -40,10 +40,10 @@ m4_define([b4_define_state],[[
     let mut label: i32 = Self::YYNEWSTATE;
 
     /* The location where the error started.  */
-    let mut yyerrloc: YYLoc = YYLoc::new(0, 0);
+    let mut yyerrloc: YYLoc = YYLoc::default();
 
     /* Location. */
-    let mut yylloc: YYLoc = YYLoc::new(0, 0);
+    let mut yylloc: YYLoc = YYLoc::default();
 
     /* Semantic value of the lookahead.  */
     let mut yylval: YYValue = YYValue::new_uninitialized();
